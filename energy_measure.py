@@ -18,8 +18,9 @@ cost_growth_rate = {
     "biomass": 2
 }
 
+analysis_period = 25
+
 class Measure():   
-    analysis_period = 0
     discount_rate = 0.04
 
     def __init__(self, name):
@@ -28,6 +29,9 @@ class Measure():
         self.cost = 0
         self.lifetime = 0 
         self.externalities = []
+        self.savings_per_year_taxable = []
+        self.savings_per_year_nontaxable = []
+
         self.energy_savings_with_taxes = {
             "electricity": [],
             "diesel_oil": [],
@@ -51,14 +55,52 @@ class Measure():
         }
 
         self.initialize_measure()
-        #print("%d", (self.energy_savings_without_taxes["electricity"][0]))
-    
+        self.calculate_energy_cost_per_year()
+
+        #calculate energy savings during period of analysis
+        
+        #with taxes
+        self.savings_per_year_taxable.insert(0, self.energy_savings_with_taxes["electricity"][0]*self.energy_conservation["electricity"]+ self.energy_savings_with_taxes["diesel_oil"][0]*self.energy_conservation["diesel_oil"]+ self.energy_savings_with_taxes["motor_gasoline"][0]*self.energy_conservation["motor_gasoline"] + self.energy_savings_with_taxes["natural_gas"][0]*self.energy_conservation["natural_gas"] + self.energy_savings_with_taxes["biomass"][0]*self.energy_conservation["biomass"])
+        
+        #without taxes
+        self.savings_per_year_nontaxable.insert(0, self.energy_savings_without_taxes["electricity"][0]*self.energy_conservation["electricity"]+ self.energy_savings_without_taxes["diesel_oil"][0]*self.energy_conservation["diesel_oil"]+ self.energy_savings_without_taxes["motor_gasoline"][0]*self.energy_conservation["motor_gasoline"] + self.energy_savings_without_taxes["natural_gas"][0]*self.energy_conservation["natural_gas"] + self.energy_savings_without_taxes["biomass"][0]*self.energy_conservation["biomass"])
+
+        self.savings_calculation_per_year()
+       
+
+    def calculate_energy_cost_per_year(self):
+        for year in range(1, analysis_period):
+            #calculate energy costs during analysis period, based on growth rate of each energy genre
+            #with taxes
+            self.energy_savings_with_taxes["electricity"][year] = self.energy_savings_with_taxes["electricity"][year-1]*cost_growth_rate["electricity"]
+            self.energy_savings_with_taxes["diesel_oil"][year] = self.energy_savings_with_taxes["diesel_oil"][year-1]*cost_growth_rate["diesel_oil"]
+            self.energy_savings_with_taxes["motor_gasoline"][year] = self.energy_savings_with_taxes["motor_gasoline"][year-1]*cost_growth_rate["motor_gasoline"]
+            self.energy_savings_with_taxes["natural_gas"][year] = self.energy_savings_with_taxes["natural_gas"][year-1]*cost_growth_rate["natural_gas"]
+            self.energy_savings_with_taxes["biomass"][year] = self.energy_savings_with_taxes["biomass"][year-1]*cost_growth_rate["biomass"]
+
+            #without taxes
+            self.energy_savings_without_taxes["electricity"][year] = self.energy_savings_without_taxes["electricity"][year-1]*cost_growth_rate["electricity"]
+            self.energy_savings_without_taxes["diesel_oil"][year] = self.energy_savings_without_taxes["diesel_oil"][year-1]*cost_growth_rate["diesel_oil"]
+            self.energy_savings_without_taxes["motor_gasoline"][year] = self.energy_savings_without_taxes["motor_gasoline"][year-1]*cost_growth_rate["motor_gasoline"]
+            self.energy_savings_without_taxes["natural_gas"][year] = self.energy_savings_without_taxes["natural_gas"][year-1]*cost_growth_rate["natural_gas"]
+            self.energy_savings_without_taxes["biomass"][year] = self.energy_savings_without_taxes["biomass"][year-1]*cost_growth_rate["biomass"]
+
+
+
     def initialize_measure(self):
         self.calculate_specs()
         self.calculate_savings_wt()
         self.calculate_savings_t()
-
     
+    def savings_calculation_per_year(self):
+        for year in range(1, analysis_period):
+            #with taxes
+            self.savings_per_year_taxable[year] = self.energy_savings_with_taxes["electricity"][year]*self.energy_conservation["electricity"]+ self.energy_savings_with_taxes["diesel_oil"][year]*self.energy_conservation["diesel_oil"]+ self.energy_savings_with_taxes["motor_gasoline"][year]*self.energy_conservation["motor_gasoline"] + self.energy_savings_with_taxes["natural_gas"][year]*self.energy_conservation["natural_gas"] + self.energy_savings_with_taxes["biomass"][year]*self.energy_conservation["biomass"]
+            
+            #without taxes
+            self.savings_per_year_nontaxable[year] = self.energy_savings_without_taxes["electricity"][year]*self.energy_conservation["electricity"]+ self.energy_savings_without_taxes["diesel_oil"][year]*self.energy_conservation["diesel_oil"]+ self.energy_savings_without_taxes["motor_gasoline"][year]*self.energy_conservation["motor_gasoline"] + self.energy_savings_without_taxes["natural_gas"][year]*self.energy_conservation["natural_gas"] + self.energy_savings_without_taxes["biomass"][year]*self.energy_conservation["biomass"]
+
+
     def calculate_specs(self):
         try:
             cursor2 = conn.cursor('cursor_backup', cursor_factory=psycopg2.extras.DictCursor)
@@ -68,7 +110,6 @@ class Measure():
                 if row[0] == self.name:
                     self.lifetime = 25
                     self.cost = row[4]
-                    #print(row[4])
                     self.energy_conservation["electricity"] = row[6]
                     self.energy_conservation["diesel_oil"] = row[7]
                     self.energy_conservation["motor_gasoline"] = row[8]
@@ -91,14 +132,13 @@ class Measure():
             for row in cursor1:
                 if(row[0].strip() == 'Electricity hh'):
                     self.energy_savings_without_taxes["electricity"].insert(0, self.energy_conservation["electricity"]*row[2])
-                    #print(self.energy_savings_without_taxes["electricity"][0])
-                if(row[0].strip() == 'Diesel oil hh '):
+                if(row[0].strip() == 'Diesel oil hh'):
                     self.energy_savings_without_taxes["diesel_oil"].insert(0,self.energy_conservation["diesel_oil"]*row[2])
-                if(row[0].strip() == 'Motor Gasoline '):
+                if(row[0].strip() == 'Motor Gasoline'):
                     self.energy_savings_without_taxes["motor_gasoline"].insert(0, self.energy_conservation["motor_gasoline"]*row[2])
-                if(row[0].strip() == 'Natural gas hh '):
+                if(row[0].strip() == 'Natural gas hh'):
                     self.energy_savings_without_taxes["natural_gas"].insert(0, self.energy_conservation["natural_gas"]*row[2])
-                if(row[0].strip() == 'Biomass hh '):
+                if(row[0].strip() == 'Biomass hh'):
                     self.energy_savings_without_taxes["biomass"].insert(0, self.energy_conservation["biomass"]*row[2])
                     
         except (Exception, psycopg2.Error) as error :
