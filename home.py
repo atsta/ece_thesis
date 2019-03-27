@@ -1,6 +1,7 @@
 import energy_measure
 import social_investment_analysis
 import financial_investment_analysis
+import investment_analysis_perspective
 
 def main():
     analysis = input('Select analysis: ')
@@ -16,6 +17,9 @@ def main():
         
     else: 
         analysis = input('Select analysis: ')
+    
+    #analysis from business perspective
+
         
    
 

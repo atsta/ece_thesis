@@ -39,7 +39,7 @@ class Financial():
             "natural_gas": [], 
             "biomass": []
         }
-        
+
         self.calculate_savings_t()
         self.calculate_energy_cost_per_year()
 
@@ -116,6 +116,11 @@ class Financial():
                 self.cost_pv_per_year[year] = 0
             #calculate in total 
             self.total_cost_pv = self.total_cost_pv + self.cost_pv_per_year[year]
+    
+    def measure_judgment(self):
+        judgement = "investment sustainable"
+        judgement = "investment not sustainable"
+        return judgement
        
 
    
