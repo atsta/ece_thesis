@@ -70,7 +70,3 @@ class Measure():
     
     def get_energy_conservation(self):
        return self.energy_conservation
-
-    
-
-    

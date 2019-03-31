@@ -5,8 +5,6 @@ import sys
 import pprint
 import psycopg2.extras
 
-
-
 analysis_period = 25
 discount_rate = 0.04
 cost_growth_rate = {
@@ -18,7 +16,7 @@ cost_growth_rate = {
 }
 
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
-# get a connection
+# get a connection with energy db
 conn = psycopg2.connect(conn_string)
 
 class Social():   
@@ -28,10 +26,8 @@ class Social():
         self.externalities = externalities
         self.energy_conservation = energy_conservation
         self.savings_per_year_nontaxable = []
-        self.cost_pv_per_year = []
-        self.total_cost_pv = 0 
-        self.benefit_pv_per_year = []
-        self.total_benefit_pv = 0
+        self.cost_pv = 0 
+        self.benefit_pv = 0
         self.energy_savings_without_taxes = {
             "electricity": [],
             "diesel_oil": [],
@@ -39,26 +35,22 @@ class Social():
             "natural_gas": [], 
             "biomass": []
         }
-         
+        
+        #calculate energy savings without taxes, social analysis
         self.calculate_savings_wt()
         self.calculate_energy_cost_per_year()
 
         #calculate energy savings during period of analysis
         self.savings_calculation_per_year()
 
-        #calculate cost of technology during analysis period and in total
-        self.calculate_cost_pv()
-
-        #calculate benefits of technology during analysis period and in total
-        self.calculate_benefit_pv()
-
+        #determin whethe or not a measure is social acceptable 
+        self.measure_judgment()
 
     def calculate_savings_wt(self):
-        print("ok")
+        #get energy cost data from cost table of energy db
         try: 
             cursor1 = conn.cursor('cursor_backup', cursor_factory=psycopg2.extras.DictCursor)
             cursor1.execute('SELECT * FROM energy_cost LIMIT 1000')
-            
             for row in cursor1:
                 if(row[0].strip() == 'Electricity hh'):
                     self.energy_savings_without_taxes["electricity"].insert(0, self.energy_conservation["electricity"]*row[2])
@@ -78,46 +70,76 @@ class Social():
             if(conn):
                 cursor1.close()
 
-
     def savings_calculation_per_year(self):
         self.savings_per_year_nontaxable.insert(0, self.energy_savings_without_taxes["electricity"][0]*self.energy_conservation["electricity"]+ self.energy_savings_without_taxes["diesel_oil"][0]*self.energy_conservation["diesel_oil"]+ self.energy_savings_without_taxes["motor_gasoline"][0]*self.energy_conservation["motor_gasoline"] + self.energy_savings_without_taxes["natural_gas"][0]*self.energy_conservation["natural_gas"] + self.energy_savings_without_taxes["biomass"][0]*self.energy_conservation["biomass"])
-
         for year in range(1, analysis_period):
-            #without taxes
-            self.savings_per_year_nontaxable[year] = self.energy_savings_without_taxes["electricity"][year]*self.energy_conservation["electricity"]+ self.energy_savings_without_taxes["diesel_oil"][year]*self.energy_conservation["diesel_oil"]+ self.energy_savings_without_taxes["motor_gasoline"][year]*self.energy_conservation["motor_gasoline"] + self.energy_savings_without_taxes["natural_gas"][year]*self.energy_conservation["natural_gas"] + self.energy_savings_without_taxes["biomass"][year]*self.energy_conservation["biomass"]
+            self.savings_per_year_nontaxable.insert(year, self.energy_savings_without_taxes["electricity"][year]*self.energy_conservation["electricity"]+ self.energy_savings_without_taxes["diesel_oil"][year]*self.energy_conservation["diesel_oil"]+ self.energy_savings_without_taxes["motor_gasoline"][year]*self.energy_conservation["motor_gasoline"] + self.energy_savings_without_taxes["natural_gas"][year]*self.energy_conservation["natural_gas"] + self.energy_savings_without_taxes["biomass"][year]*self.energy_conservation["biomass"])
     
     def calculate_energy_cost_per_year(self):
         for year in range(1, analysis_period):
-            #without taxes
-            self.energy_savings_without_taxes["electricity"][year] = self.energy_savings_without_taxes["electricity"][year-1]*cost_growth_rate["electricity"]
-            self.energy_savings_without_taxes["diesel_oil"][year] = self.energy_savings_without_taxes["diesel_oil"][year-1]*cost_growth_rate["diesel_oil"]
-            self.energy_savings_without_taxes["motor_gasoline"][year] = self.energy_savings_without_taxes["motor_gasoline"][year-1]*cost_growth_rate["motor_gasoline"]
-            self.energy_savings_without_taxes["natural_gas"][year] = self.energy_savings_without_taxes["natural_gas"][year-1]*cost_growth_rate["natural_gas"]
-            self.energy_savings_without_taxes["biomass"][year] = self.energy_savings_without_taxes["biomass"][year-1]*cost_growth_rate["biomass"]
+            self.energy_savings_without_taxes["electricity"].insert(year, self.energy_savings_without_taxes["electricity"][year-1]*cost_growth_rate["electricity"])
+            self.energy_savings_without_taxes["diesel_oil"].insert(year, self.energy_savings_without_taxes["diesel_oil"][year-1]*cost_growth_rate["diesel_oil"])
+            self.energy_savings_without_taxes["motor_gasoline"].insert(year, self.energy_savings_without_taxes["motor_gasoline"][year-1]*cost_growth_rate["motor_gasoline"])
+            self.energy_savings_without_taxes["natural_gas"].insert(year, self.energy_savings_without_taxes["natural_gas"][year-1]*cost_growth_rate["natural_gas"])
+            self.energy_savings_without_taxes["biomass"].insert(year, self.energy_savings_without_taxes["biomass"][year-1]*cost_growth_rate["biomass"])
 
     def calculate_benefit_pv(self):
-        self.total_benefit_pv = 0
-        for year in range(analysis_period):
-            self.benefit_pv_per_year[year] = self.savings_per_year_nontaxable[year]+ self.externalities[year]
-        for year in range(analysis_period):
-            self.benefit_pv_per_year[year] = self.benefit_pv_per_year[year]/((1+discount_rate)**year)
-            self.total_benefit_pv = self.total_benefit_pv + self.benefit_pv_per_year[year]
+        #initialization
+        benefit_per_year = [] 
+        benefit_per_year[0] = self.savings_per_year_nontaxable[0] + self.externalities[0]
+        total_flow = benefit_per_year[0]/(1+discount_rate)**0
+
+        #calculate residual value at the end of analysis period
+        residual_value = (2*self.lifetime - analysis_period)/(self.cost/self.lifetime)
+
+        #annual calculation 
+        for year in range(1, analysis_period):
+            benefit_per_year.insert(year, self.savings_per_year_nontaxable[year] + self.externalities[year])
+            if year == analysis_period: 
+                total_flow = total_flow + benefit_per_year[year]/(1 + discount_rate)**year + residual_value
+            else: 
+                total_flow = total_flow + benefit_per_year[year]/(1 + discount_rate)**year 
+        return total_flow
+          
 
     def calculate_cost_pv(self):
-        self.cost_pv_per_year[0] = self.cost
-        self.total_cost_pv = self.cost_pv_per_year[0]
+        #initialization
+        cost_per_year = [] 
+        cost_per_year[0] = self.cost
+        total_flow = cost_per_year[0]/(1+discount_rate)**0
 
         #annual calculation 
         for year in range(1, analysis_period):
             if year == self.lifetime: 
-                self.cost_pv_per_year[year] = self.cost
+                cost_per_year.insert(year, self.cost)
             else: 
-                self.cost_pv_per_year[year] = 0
-            #calculate in total 
-            self.total_cost_pv = self.total_cost_pv + self.cost_pv_per_year[year]
+                cost_per_year.insert(year, 0)
+            #calculate cost cash flow in total 
+            total_flow = total_flow + cost_per_year[year]/(1+discount_rate)**year
+        return total_flow
        
-
     def measure_judgment(self):
-        judgement = "investment sustainable"
-        judgement = "investment not sustainable"
+        judgement = []
+        #calculate cost of technology during analysis period and in total
+        self.cost_pv = self.calculate_cost_pv()
+        
+        #calculate benefits of technology during analysis period and in total
+        self.benefit_pv = self.calculate_benefit_pv()
+    
+        #calculate NPV
+        npv = self.benefit_pv - self.cost_pv
+        if (npv > 0):
+            judgement.insert(0, "investment sustainable according to npv criterion")
+        else: 
+            judgement.insert(0, "investment not sustainable according to npv criterion")
+        
+        #calculate B/C 
+        b_to_c = self.benefit_pv/self.cost_pv
+        if (b_to_c > 1):
+            judgement.insert(1, "investment sustainable according to B/C criterion")
+        else: 
+            judgement.insert(1, "investment not sustainable according to B/C criterion")
+        
+        #calculate IRR
+
         return judgement
