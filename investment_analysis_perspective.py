@@ -5,11 +5,15 @@ import sys
 import pprint
 import psycopg2.extras
 
+#pandas
+import numpy as np
+import pandas as pd
 
 analysis_period = 25
 discount_rate = 0.05
 #subsity_rate = 0.4
 #tax_depreciation = 0.1
+tax_lifetime = 10
 cost_growth_rate = {
     "electricity": 1.5,
     "diesel_oil": 2.5,
@@ -24,19 +28,27 @@ conn = psycopg2.connect(conn_string)
 
 
 class Perspective():
-     def __init__(self, cost, lifetime, externalities, energy_conservation, tax_depreciation, subsity_rate):
+    def __init__(self, cost, lifetime, externalities, energy_conservation, tax_depreciation, subsity_rate):
         self.cost = cost
         self.lifetime = lifetime
         self.externalities = externalities
         self.energy_conservation = energy_conservation
         self.tax_depreciation = tax_depreciation
         self.subsity_rate = subsity_rate
-
         self.savings_per_year_taxable = []
-        self.cost_pv_per_year = []
-        self.total_cost_pv = 0 
-        self.benefit_pv_per_year = []
-        self.total_benefit_pv = 0
+
+        self.logistic_cost_without_taxes = self.cost*(1-self.subsity_rate)
+        self.total_cost_flow = 0
+        self.total_benefit_flow = 0
+
+        self.costs = pd.DataFrame([])
+        self.benefits = pd.DataFrame([])
+
+        
+        #self.cost_pv_per_year = []
+        #self.total_cost_pv = 0 
+        #self.benefit_pv_per_year = []
+        #self.total_benefit_pv = 0
         
         self.energy_savings_with_taxes = {
             "electricity": [],
@@ -52,11 +64,45 @@ class Perspective():
         #calculate energy savings during period of analysis
         self.savings_calculation_per_year()
 
+        #construct cost per year dataframe 
+        self.create_costdf()
+
+        #construct benefit per year dataframe
+        self.create_benefitdf()
+
+        self.measure_judgment()
         #calculate cost of technology during analysis period and in total
-        self.calculate_cost_pv()
+        #self.calculate_cost_pv()
 
         #calculate benefits of technology during analysis period and in total
-        self.calculate_benefit_pv()
+        #self.calculate_benefit_pv()
+
+    def create_benefitdf(self):
+        self.benefits["Energy_savings"] = self.savings_per_year_taxable
+        for year in range(analysis_period):
+            if year == analysis_period:
+                self.benefits = self.benefits.append(pd.DataFrame({'Residual_value': (2*self.lifetime-analysis_period)*self.logistic_cost_without_taxes*1.24/self.lifetime}, index=[0]), ignonre_index=True)
+            else: 
+                self.benefits = self.benefits.append(pd.DataFrame({'Residual_value': 0}, index=[0]), ignonre_index=True)
+            if year + 1 > self.lifetime:
+                self.benefits = self.benefits.append(pd.DataFrame({'Maintenance': 0}, index=[0]), ignonre_index=True)
+            else: 
+                self.benefits = self.benefits.append(pd.DataFrame({'Maintenance': 100}, index=[0]), ignonre_index=True)
+            if year + 1 <= tax_lifetime:
+                self.benefits = self.benefits.append(pd.DataFrame({'Tax_depreciation': self.logistic_cost_without_taxes*self.tax_depreciation*0.25}, index=[0]), ignonre_index=True)
+            else:
+                self.benefits = self.benefits.append(pd.DataFrame({'Tax_depreciation': 0}, index=[0]), ignonre_index=True)
+            #self.benefits = self.benefits.append(pd.DataFrame({'Discounted_cash_flow': }, index=[0]), ignonre_index=True)
+            self.total_benefit_flow = self.benefits[['Discounted_cash_flow']].sum()
+
+    def create_costdf(self):
+        for year in range(analysis_period):
+            if year==0 or year==self.lifetime:
+                self.costs = self.costs.append(pd.DataFrame({'Technology_cost': self.logistic_cost_without_taxes, 'Discounted_cash_flow': self.logistic_cost_without_taxes/(1+discount_rate)**year}, index=[0]), ignonre_index=True)
+            else: 
+                self.costs = self.costs.append(pd.DataFrame({'Technology_cost': 0, 'Discounted_cash_flow': 0}, index=[0]), ignonre_index=True)
+            self.total_cost_flow = self.costs[['Discounted_cash_flow']].sum()
+        print(self.costs.head())
 
     def calculate_savings_t(self):
         try: 

@@ -1,6 +1,4 @@
 
-
-
 class Terms():
     def __init__(self):
 

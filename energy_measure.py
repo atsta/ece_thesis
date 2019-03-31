@@ -5,9 +5,8 @@ import sys
 import pprint
 import psycopg2.extras
 
-
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
-# get a connection
+# get a connection with energy db
 conn = psycopg2.connect(conn_string)
 
 class Measure():   
@@ -23,24 +22,25 @@ class Measure():
             "natural_gas": 0, 
             "biomass": 0
         }
-
+        
+        #initialize an energy measure with its specs
         self.initialize_measure()
       
-        #calculate benefit externalities during analysis period 
+        #calculate benefit externalities during analysis period, store in a list
         self.calculate_externalities()
 
     def calculate_externalities(self):
         for year in range(25):
-            self.externalities[year] = 2.11
+            self.externalities.insert(year, 2.11)
 
     def initialize_measure(self):
         self.calculate_specs() 
     
     def calculate_specs(self):
+        #get data from energy measure table of energy db
         try:
             cursor2 = conn.cursor('cursor_backup', cursor_factory=psycopg2.extras.DictCursor)
             cursor2.execute('SELECT * FROM energy_measure LIMIT 1000')
-
             for row in cursor2:
                 if row[0] == self.name:
                     self.lifetime = 15
@@ -58,7 +58,7 @@ class Measure():
             if(conn):
                 cursor2.close()
 
-    #and some methods to access parameters
+    #and some methods to access objects of the class for general purpose 
     def get_cost(self):
        return self.cost
     

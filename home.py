@@ -19,7 +19,7 @@ def main():
         analysis = input('Select analysis: ')
     
     #analysis from business perspective
-
+    persp = investment_analysis_perspective.Perspective(measure.get_cost(), measure.get_lifetime(), measure.get_externalities(), measure.get_energy_conservation(), 0.1, 0.4)
         
    
 
