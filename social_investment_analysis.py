@@ -43,7 +43,7 @@ class Social():
         #calculate energy savings during period of analysis
         self.savings_calculation_per_year()
 
-        #determin whethe or not a measure is social acceptable 
+        #determine whethe or not a measure is social acceptable 
         self.measure_judgment()
 
     def calculate_savings_wt(self):
