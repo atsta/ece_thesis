@@ -43,7 +43,7 @@ class Social():
         #calculate energy savings during period of analysis
         self.savings_calculation_per_year()
 
-        #determine whethe or not a measure is social acceptable 
+        #determine whether or not a measure is social acceptable 
         self.measure_judgment()
 
     def calculate_savings_wt(self):
@@ -133,7 +133,7 @@ class Social():
         else: 
             judgement.insert(0, "investment not sustainable according to npv criterion")
         
-        #calculate B/C 
+        #calσculate B/C 
         b_to_c = self.benefit_pv/self.cost_pv
         if (b_to_c > 1):
             judgement.insert(1, "investment sustainable according to B/C criterion")

@@ -5,7 +5,7 @@ import sys
 import pprint
 import psycopg2.extras
 
-#pandas
+#numpy, pandas
 import numpy as np
 import pandas as pd
 
@@ -23,9 +23,8 @@ cost_growth_rate = {
 }
 
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
-# get a connection
+# get a connection with energy db
 conn = psycopg2.connect(conn_string)
-
 
 class Perspective():
     def __init__(self, cost, lifetime, externalities, energy_conservation, tax_depreciation, subsity_rate):
@@ -44,12 +43,9 @@ class Perspective():
         self.costs = pd.DataFrame([])
         self.benefits = pd.DataFrame([])
 
-        
-        #self.cost_pv_per_year = []
-        #self.total_cost_pv = 0 
-        #self.benefit_pv_per_year = []
-        #self.total_benefit_pv = 0
-        
+        self.cost_pv = 0 
+        self.benefit_pv = 0
+
         self.energy_savings_with_taxes = {
             "electricity": [],
             "diesel_oil": [],
@@ -58,6 +54,7 @@ class Perspective():
             "biomass": []
         }
 
+        #calculate energy savings with taxes
         self.calculate_savings_t()
         self.calculate_energy_cost_per_year()
 
@@ -69,13 +66,9 @@ class Perspective():
 
         #construct benefit per year dataframe
         self.create_benefitdf()
-
+        
+        #determine whether or not a measure is acceptable 
         self.measure_judgment()
-        #calculate cost of technology during analysis period and in total
-        #self.calculate_cost_pv()
-
-        #calculate benefits of technology during analysis period and in total
-        #self.calculate_benefit_pv()
 
     def create_benefitdf(self):
         self.benefits["Energy_savings"] = self.savings_per_year_taxable
@@ -145,31 +138,32 @@ class Perspective():
             self.energy_savings_with_taxes["motor_gasoline"][year] = self.energy_savings_with_taxes["motor_gasoline"][year-1]*cost_growth_rate["motor_gasoline"]
             self.energy_savings_with_taxes["natural_gas"][year] = self.energy_savings_with_taxes["natural_gas"][year-1]*cost_growth_rate["natural_gas"]
             self.energy_savings_with_taxes["biomass"][year] = self.energy_savings_with_taxes["biomass"][year-1]*cost_growth_rate["biomass"]
+          
 
-    
-    def calculate_benefit_pv(self):
-        self.total_benefit_pv = 0
-        
-        for year in range(analysis_period):
-            self.benefit_pv_per_year[year] = self.savings_per_year_taxable[year]+ self.externalities[year]
-        for year in range(analysis_period):
-            self.benefit_pv_per_year[year] = self.benefit_pv_per_year[year]/((1+discount_rate)**year)
-            self.total_benefit_pv = self.total_benefit_pv + self.benefit_pv_per_year[year]
-
-    def calculate_cost_pv(self):
-        self.cost_pv_per_year[0] = self.cost
-        self.total_cost_pv = self.cost_pv_per_year[0]
-
-        #annual calculation 
-        for year in range(1, analysis_period):
-            if year == self.lifetime: 
-                self.cost_pv_per_year[year] = self.cost
-            else: 
-                self.cost_pv_per_year[year] = 0
-            #calculate in total 
-            self.total_cost_pv = self.total_cost_pv + self.cost_pv_per_year[year]
-    
     def measure_judgment(self):
-        judgement = "investment sustainable"
-        judgement = "investment not sustainable"
+        judgement = []
+        #calculate cost of technology during analysis period and in total
+        self.cost_pv = self.total_cost_flow
+        
+        #calculate benefits of technology during analysis period and in total
+        self.benefit_pv = self.total_benefit_flow
+    
+        #calculate NPV
+        npv = self.benefit_pv - self.cost_pv
+        if (npv > 0):
+            judgement.insert(0, "investment sustainable according to npv criterion")
+        else: 
+            judgement.insert(0, "investment not sustainable according to npv criterion")
+        
+        #calculate B/C 
+        b_to_c = self.benefit_pv/self.cost_pv
+        if (b_to_c > 1):
+            judgement.insert(1, "investment sustainable according to B/C criterion")
+        else: 
+            judgement.insert(1, "investment not sustainable according to B/C criterion")
+        
+        #calculate IRR
+
         return judgement
+
+ 
