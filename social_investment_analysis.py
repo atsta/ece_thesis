@@ -5,14 +5,16 @@ import sys
 import pprint
 import psycopg2.extras
 
+import decimal
+
 analysis_period = 25
-discount_rate = 0.04
+discount_rate = decimal.Decimal(0.04)
 cost_growth_rate = {
-    "electricity": 1.5,
-    "diesel_oil": 2.5,
-    "motor_gasoline": 2.5, 
-    "natural_gas": 1.7, 
-    "biomass": 2
+    "electricity": decimal.Decimal(1.5),
+    "diesel_oil": decimal.Decimal(2.5),
+    "motor_gasoline": decimal.Decimal(2.5), 
+    "natural_gas": decimal.Decimal(1.7), 
+    "biomass": decimal.Decimal(2)
 }
 
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
@@ -44,7 +46,7 @@ class Social():
         self.savings_calculation_per_year()
 
         #determine whether or not a measure is social acceptable 
-        self.measure_judgment()
+        print(self.measure_judgment())
 
     def calculate_savings_wt(self):
         #get energy cost data from cost table of energy db
@@ -86,7 +88,7 @@ class Social():
     def calculate_benefit_pv(self):
         #initialization
         benefit_per_year = [] 
-        benefit_per_year[0] = self.savings_per_year_nontaxable[0] + self.externalities[0]
+        benefit_per_year.insert(0, self.savings_per_year_nontaxable[0] + self.externalities[0])
         total_flow = benefit_per_year[0]/(1+discount_rate)**0
 
         #calculate residual value at the end of analysis period
@@ -105,7 +107,7 @@ class Social():
     def calculate_cost_pv(self):
         #initialization
         cost_per_year = [] 
-        cost_per_year[0] = self.cost
+        cost_per_year.insert(0, self.cost)
         total_flow = cost_per_year[0]/(1+discount_rate)**0
 
         #annual calculation 

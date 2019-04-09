@@ -5,6 +5,9 @@ import sys
 import pprint
 import psycopg2.extras
 
+import decimal
+
+
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
 # get a connection with energy db
 conn = psycopg2.connect(conn_string)
@@ -31,7 +34,7 @@ class Measure():
 
     def calculate_externalities(self):
         for year in range(25):
-            self.externalities.insert(year, 2.11)
+            self.externalities.insert(year, decimal.Decimal(2.11))
 
     def initialize_measure(self):
         self.calculate_specs() 

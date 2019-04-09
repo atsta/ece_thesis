@@ -9,6 +9,7 @@ def main():
     measure = energy_measure.Measure(input_measure)
     if analysis.strip() == 'Social':
         print("Social analysis for measure %s" % (input_measure))
+        #print(measure.get_cost())
         scba = social_investment_analysis.Social(measure.get_cost(), measure.get_lifetime(), measure.get_externalities(), measure.get_energy_conservation())
 
     elif analysis.strip() == 'Finacial': 
@@ -19,7 +20,7 @@ def main():
         analysis = input('Select analysis: ')
     
     #analysis from business perspective
-    persp = investment_analysis_perspective.Perspective(measure.get_cost(), measure.get_lifetime(), measure.get_externalities(), measure.get_energy_conservation(), 0.1, 0.4)
+    #persp = investment_analysis_perspective.Perspective(measure.get_cost(), measure.get_lifetime(), measure.get_externalities(), measure.get_energy_conservation(), 0.1, 0.4)
         
    
 
