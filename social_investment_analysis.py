@@ -64,7 +64,9 @@ class Social():
                     self.energy_savings_without_taxes["natural_gas"].insert(0, self.energy_conservation["natural_gas"]*row[2])
                 if(row[0].strip() == 'Biomass hh'):
                     self.energy_savings_without_taxes["biomass"].insert(0, self.energy_conservation["biomass"]*row[2])
-                    
+            
+            print(self.energy_savings_without_taxes["diesel_oil"])
+            #print(self.energy_conservation["diesel_oil"])   
         except (Exception, psycopg2.Error) as error :
             print ("Error while connecting to PostgreSQL", error)
         finally:
@@ -76,6 +78,7 @@ class Social():
         self.savings_per_year_nontaxable.insert(0, self.energy_savings_without_taxes["electricity"][0]*self.energy_conservation["electricity"]+ self.energy_savings_without_taxes["diesel_oil"][0]*self.energy_conservation["diesel_oil"]+ self.energy_savings_without_taxes["motor_gasoline"][0]*self.energy_conservation["motor_gasoline"] + self.energy_savings_without_taxes["natural_gas"][0]*self.energy_conservation["natural_gas"] + self.energy_savings_without_taxes["biomass"][0]*self.energy_conservation["biomass"])
         for year in range(1, analysis_period):
             self.savings_per_year_nontaxable.insert(year, self.energy_savings_without_taxes["electricity"][year]*self.energy_conservation["electricity"]+ self.energy_savings_without_taxes["diesel_oil"][year]*self.energy_conservation["diesel_oil"]+ self.energy_savings_without_taxes["motor_gasoline"][year]*self.energy_conservation["motor_gasoline"] + self.energy_savings_without_taxes["natural_gas"][year]*self.energy_conservation["natural_gas"] + self.energy_savings_without_taxes["biomass"][year]*self.energy_conservation["biomass"])
+            print(self.savings_per_year_nontaxable[year])
     
     def calculate_energy_cost_per_year(self):
         for year in range(1, analysis_period):
@@ -130,6 +133,7 @@ class Social():
     
         #calculate NPV
         npv = self.benefit_pv - self.cost_pv
+        #print(npv)
         if (npv > 0):
             judgement.insert(0, "investment sustainable according to npv criterion")
         else: 
@@ -137,6 +141,7 @@ class Social():
         
         #calσculate B/C 
         b_to_c = self.benefit_pv/self.cost_pv
+        print(b_to_c)
         if (b_to_c > 1):
             judgement.insert(1, "investment sustainable according to B/C criterion")
         else: 

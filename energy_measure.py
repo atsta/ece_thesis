@@ -46,13 +46,18 @@ class Measure():
             cursor2.execute('SELECT * FROM energy_measure LIMIT 1000')
             for row in cursor2:
                 if row[0] == self.name:
-                    self.lifetime = 15
+                    self.lifetime = 20
                     self.cost = row[4]
                     self.energy_conservation["electricity"] = row[6]
                     self.energy_conservation["diesel_oil"] = row[7]
                     self.energy_conservation["motor_gasoline"] = row[8]
                     self.energy_conservation["natural_gas"] = row[9]
                     self.energy_conservation["biomas"] = row[10]
+                    #print(self.energy_conservation["electricity"])
+                    #print(self.energy_conservation["diesel_oil"])
+                    #print(self.energy_conservation["motor_gasoline"])
+                    #print(self.energy_conservation["natural_gas"])
+                    #print(self.energy_conservation["biomas"])
                     break
         except (Exception, psycopg2.Error) as error :
             print ("Error while connecting to PostgreSQL", error)
