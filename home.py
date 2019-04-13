@@ -12,7 +12,7 @@ def main():
         #print(measure.get_cost())
         scba = social_investment_analysis.Social(measure.get_cost(), measure.get_lifetime(), measure.get_externalities(), measure.get_energy_conservation())
 
-    elif analysis.strip() == 'Finacial': 
+    elif analysis.strip() == 'Financial': 
         print("Financial analysis for measure %s" % (input_measure))
         fcba = financial_investment_analysis.Financial(measure.get_cost(), measure.get_lifetime(), measure.get_externalities(), measure.get_energy_conservation())
         
@@ -20,9 +20,8 @@ def main():
         analysis = input('Select analysis: ')
     
     #analysis from business perspective
-    #persp = investment_analysis_perspective.Perspective(measure.get_cost(), measure.get_lifetime(), measure.get_externalities(), measure.get_energy_conservation(), 0.1, 0.4)
-        
-   
+    persp = investment_analysis_perspective.Perspective(measure.get_cost(), measure.get_lifetime(), measure.get_externalities(), measure.get_energy_conservation(), 0.1, 0.4)
+
 
 if __name__ == "__main__":
     main()
