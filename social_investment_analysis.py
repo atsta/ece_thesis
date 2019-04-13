@@ -30,6 +30,7 @@ class Social():
         self.savings_per_year_nontaxable = []
         self.cost_pv = 0 
         self.benefit_pv = 0
+        
         self.energy_savings_without_taxes = {
             "electricity": [],
             "diesel_oil": [],
