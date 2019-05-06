@@ -9,17 +9,18 @@ import psycopg2.extras
 import numpy as np
 import pandas as pd
 
+import decimal
+
 analysis_period = 25
-discount_rate = 0.05
+discount_rate = decimal.Decimal(0.05)
 #subsity_rate = 0.4
-#tax_depreciation = 0.1
 tax_lifetime = 10
 cost_growth_rate = {
-    "electricity": 1.5,
-    "diesel_oil": 2.5,
-    "motor_gasoline": 2.5, 
-    "natural_gas": 1.7, 
-    "biomass": 2
+    "electricity": decimal.Decimal(1.5),
+    "diesel_oil": decimal.Decimal(2.5),
+    "motor_gasoline": decimal.Decimal(2.5), 
+    "natural_gas": decimal.Decimal(1.7), 
+    "biomass": decimal.Decimal(2)
 }
 
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
@@ -72,26 +73,26 @@ class Perspective():
         self.benefits["Energy_savings"] = self.savings_per_year_taxable
         for year in range(analysis_period):
             if year == analysis_period:
-                self.benefits = self.benefits.append(pd.DataFrame({'Residual_value': (2*self.lifetime-analysis_period)*self.logistic_cost_without_taxes*1.24/self.lifetime}, index=[0]), ignonre_index=True)
+                self.benefits = self.benefits.append(pd.DataFrame({'Residual_value': (2*self.lifetime-analysis_period)*self.logistic_cost_without_taxes*1.24/self.lifetime}, index=[0]), ignore_index=True)
             else: 
-                self.benefits = self.benefits.append(pd.DataFrame({'Residual_value': 0}, index=[0]), ignonre_index=True)
+                self.benefits = self.benefits.append(pd.DataFrame({'Residual_value': 0}, index=[0]), ignore_index=True)
             if year + 1 > self.lifetime:
-                self.benefits = self.benefits.append(pd.DataFrame({'Maintenance': 0}, index=[0]), ignonre_index=True)
+                self.benefits = self.benefits.append(pd.DataFrame({'Maintenance': 0}, index=[0]), ignore_index=True)
             else: 
-                self.benefits = self.benefits.append(pd.DataFrame({'Maintenance': 100}, index=[0]), ignonre_index=True)
+                self.benefits = self.benefits.append(pd.DataFrame({'Maintenance': 100}, index=[0]), ignore_index=True)
             if year + 1 <= tax_lifetime:
-                self.benefits = self.benefits.append(pd.DataFrame({'Tax_depreciation': self.logistic_cost_without_taxes*self.tax_depreciation*0.25}, index=[0]), ignonre_index=True)
+                self.benefits = self.benefits.append(pd.DataFrame({'Tax_depreciation': self.logistic_cost_without_taxes*self.tax_depreciation*decimal.Decimal(0.25)}, index=[0]), ignore_index=True)
             else:
-                self.benefits = self.benefits.append(pd.DataFrame({'Tax_depreciation': 0}, index=[0]), ignonre_index=True)
-            #self.benefits = self.benefits.append(pd.DataFrame({'Discounted_cash_flow': }, index=[0]), ignonre_index=True)
+                self.benefits = self.benefits.append(pd.DataFrame({'Tax_depreciation': 0}, index=[0]), ignore_index=True)
+            self.benefits = self.benefits.append(pd.DataFrame({'Discounted_cash_flow': 0 }, index=[0]), ignore_index=True)
             self.total_benefit_flow = self.benefits[['Discounted_cash_flow']].sum()
 
     def create_costdf(self):
         for year in range(analysis_period):
             if year==0 or year==self.lifetime:
-                self.costs = self.costs.append(pd.DataFrame({'Technology_cost': self.logistic_cost_without_taxes, 'Discounted_cash_flow': self.logistic_cost_without_taxes/(1+discount_rate)**year}, index=[0]), ignonre_index=True)
+                self.costs = self.costs.append(pd.DataFrame({'Technology_cost': self.logistic_cost_without_taxes, 'Discounted_cash_flow': self.logistic_cost_without_taxes/(1+discount_rate)**year}, index=[0]), ignore_index=True)
             else: 
-                self.costs = self.costs.append(pd.DataFrame({'Technology_cost': 0, 'Discounted_cash_flow': 0}, index=[0]), ignonre_index=True)
+                self.costs = self.costs.append(pd.DataFrame({'Technology_cost': 0, 'Discounted_cash_flow': 0}, index=[0]), ignore_index=True)
             self.total_cost_flow = self.costs[['Discounted_cash_flow']].sum()
         print(self.costs.head())
 

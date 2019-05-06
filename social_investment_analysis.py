@@ -10,11 +10,11 @@ import decimal
 analysis_period = 25
 discount_rate = decimal.Decimal(0.04)
 cost_growth_rate = {
-    "electricity": decimal.Decimal(1.5),
-    "diesel_oil": decimal.Decimal(2.5),
-    "motor_gasoline": decimal.Decimal(2.5), 
-    "natural_gas": decimal.Decimal(1.7), 
-    "biomass": decimal.Decimal(2)
+    "electricity": decimal.Decimal(0.015),
+    "diesel_oil": decimal.Decimal(0.025),
+    "motor_gasoline": decimal.Decimal(0.025), 
+    "natural_gas": decimal.Decimal(0.017), 
+    "biomass": decimal.Decimal(0.02)
 }
 
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
@@ -57,16 +57,21 @@ class Social():
             for row in cursor1:
                 if(row[0].strip() == 'Electricity hh'):
                     self.energy_savings_without_taxes["electricity"].insert(0, self.energy_conservation["electricity"]*row[2])
+                    print(self.energy_savings_without_taxes["electricity"])
                 if(row[0].strip() == 'Diesel oil hh'):
-                    self.energy_savings_without_taxes["diesel_oil"].insert(0,self.energy_conservation["diesel_oil"]*row[2])
+                    self.energy_savings_without_taxes["diesel_oil"].insert(0, self.energy_conservation["diesel_oil"]*row[2])
+                    print(self.energy_savings_without_taxes["diesel_oil"])
                 if(row[0].strip() == 'Motor Gasoline'):
                     self.energy_savings_without_taxes["motor_gasoline"].insert(0, self.energy_conservation["motor_gasoline"]*row[2])
+                    print(self.energy_savings_without_taxes["motor_gasoline"])
                 if(row[0].strip() == 'Natural gas hh'):
                     self.energy_savings_without_taxes["natural_gas"].insert(0, self.energy_conservation["natural_gas"]*row[2])
+                    print(self.energy_savings_without_taxes["natural_gas"])
                 if(row[0].strip() == 'Biomass hh'):
                     self.energy_savings_without_taxes["biomass"].insert(0, self.energy_conservation["biomass"]*row[2])
-            
-            print(self.energy_savings_without_taxes["diesel_oil"])
+                    print(self.energy_savings_without_taxes["biomass"])
+               
+            #print(self.energy_savings_without_taxes["diesel_oil"])
             #print(self.energy_conservation["diesel_oil"])   
         except (Exception, psycopg2.Error) as error :
             print ("Error while connecting to PostgreSQL", error)
@@ -76,7 +81,9 @@ class Social():
                 cursor1.close()
 
     def savings_calculation_per_year(self):
-        self.savings_per_year_nontaxable.insert(0, self.energy_savings_without_taxes["electricity"][0]*self.energy_conservation["electricity"]+ self.energy_savings_without_taxes["diesel_oil"][0]*self.energy_conservation["diesel_oil"]+ self.energy_savings_without_taxes["motor_gasoline"][0]*self.energy_conservation["motor_gasoline"] + self.energy_savings_without_taxes["natural_gas"][0]*self.energy_conservation["natural_gas"] + self.energy_savings_without_taxes["biomass"][0]*self.energy_conservation["biomass"])
+        savings_sum = sum(self.energy_savings_without_taxes[k][0]*self.energy_conservation[k] for k in self.energy_conservation)
+        self.savings_per_year_nontaxable.insert(0, savings_sum)
+        print(self.energy_savings_without_taxes["natural_gas"][0])
         for year in range(1, analysis_period):
             self.savings_per_year_nontaxable.insert(year, self.energy_savings_without_taxes["electricity"][year]*self.energy_conservation["electricity"]+ self.energy_savings_without_taxes["diesel_oil"][year]*self.energy_conservation["diesel_oil"]+ self.energy_savings_without_taxes["motor_gasoline"][year]*self.energy_conservation["motor_gasoline"] + self.energy_savings_without_taxes["natural_gas"][year]*self.energy_conservation["natural_gas"] + self.energy_savings_without_taxes["biomass"][year]*self.energy_conservation["biomass"])
             print(self.savings_per_year_nontaxable[year])
@@ -134,15 +141,15 @@ class Social():
     
         #calculate NPV
         npv = self.benefit_pv - self.cost_pv
-        #print(npv)
+        print(npv)
         if (npv > 0):
             judgement.insert(0, "investment sustainable according to npv criterion")
         else: 
             judgement.insert(0, "investment not sustainable according to npv criterion")
         
-        #calσculate B/C 
+        #calculate B/C 
         b_to_c = self.benefit_pv/self.cost_pv
-        print(b_to_c)
+        #print(b_to_c)
         if (b_to_c > 1):
             judgement.insert(1, "investment sustainable according to B/C criterion")
         else: 

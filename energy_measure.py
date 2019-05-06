@@ -52,7 +52,7 @@ class Measure():
                     self.energy_conservation["diesel_oil"] = row[7]
                     self.energy_conservation["motor_gasoline"] = row[8]
                     self.energy_conservation["natural_gas"] = row[9]
-                    self.energy_conservation["biomas"] = row[10]
+                    self.energy_conservation["biomass"] = row[10]
                     #print(self.energy_conservation["electricity"])
                     #print(self.energy_conservation["diesel_oil"])
                     #print(self.energy_conservation["motor_gasoline"])
