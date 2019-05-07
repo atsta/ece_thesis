@@ -39,8 +39,8 @@ class Esco():
             Esco.cost_discounted_cash_flow.insert(0, Esco.cost_without_taxes[0])
 
             for year in range(1, loan.loan_period + 1):
-                Esco.cost_with_taxes.insert(year, loan.xreolisio[year] + loan.interest_paid[year])
-                Esco.cost_without_taxes.insert(year, loan.xreolisio[year]/decimal.Decimal(1.24) + loan.interest_paid[year])
+                Esco.cost_with_taxes.insert(year, loan.interest_rate[year] + loan.interest_paid[year])
+                Esco.cost_without_taxes.insert(year, loan.interest_rate[year]/decimal.Decimal(1.24) + loan.interest_paid[year])
                 Esco.cost_discounted_cash_flow(year, Esco.cost_without_taxes[year]/(1+discount_rate**year))
         else: 
             Esco.cost_with_taxes.insert(0, self.cost)
