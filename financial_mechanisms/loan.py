@@ -54,10 +54,6 @@ class Terms():
         else: 
             return 10
 
-    #methods to access specs 
-    def get_loan_period(self):
-        return loan_period
-   
 
 class Return():
     #xreolisio, tokoxreolitiki dosi: interest_rate, interest_rate_instalment
