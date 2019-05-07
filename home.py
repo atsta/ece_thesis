@@ -43,15 +43,13 @@ def main():
     #check loan 
     oroi_daneiou = loan.Terms(decimal.Decimal(0.5), 41912, decimal.Decimal(0.4))
     epistrofi_daneiou = loan.Return()
-    """
-    esco_loan = False
-    if esco_loan == True:
-        esco_loan = False
-    else: 
-        fund_take_over_rate = input("Pososto diamoirasmou ofelous: ")
-        #kostos esco = poso diamoirasmou*initial cost
-        esco_cba = esco.Esco(fund_take_over_rate*41912, 8, 0.7, esco_loan)   
-    """
+   
+    esco_loan = True
+   
+    fund_take_over_rate = input("Pososto diamoirasmou ofelous: ")
+    #kostos esco = poso diamoirasmou*initial cost
+    esco_cba = esco.Esco(fund_take_over_rate*41912, 8, 0.7, esco_loan)   
+
 
 if __name__ == "__main__":
     main()

@@ -23,25 +23,26 @@ class Esco():
         self.took_loan = took_loan
         #self.fund_take_over_rate = fund_take_over_rate
 
+        Esco.benefit.insert(0,0)
         Esco.benefit_discounted_cash_flow.insert(0, Esco.benefit[0])
 
-        for year in range(1, self.contract_period):
-            Esco.benefit_discounted_cash_flow.insert(year, Esco.benefit[year]/(1+discount_rate**year))
+        #for year in range(1, self.contract_period):
+        #    Esco.benefit_discounted_cash_flow.insert(year, Esco.benefit[year]/(1+discount_rate**year))
 
         if self.took_loan == True: 
             #pare daneio
-            esco_loan_terms = loan.Terms()
+            esco_loan_terms = loan.Terms(decimal.Decimal(0.5), 41912, decimal.Decimal(0.4))
             esco_loan_return = loan.Return()
 
             #init
-            Esco.cost_with_taxes.insert(0, loan.own_funds)
+            Esco.cost_with_taxes.insert(0, loan.Terms.own_funds_amount)
             Esco.cost_without_taxes.insert(0, Esco.cost_with_taxes[0]/decimal.Decimal(1.24))
             Esco.cost_discounted_cash_flow.insert(0, Esco.cost_without_taxes[0])
 
             for year in range(1, loan.loan_period + 1):
-                Esco.cost_with_taxes.insert(year, loan.interest_rate[year] + loan.interest_paid[year])
-                Esco.cost_without_taxes.insert(year, loan.interest_rate[year]/decimal.Decimal(1.24) + loan.interest_paid[year])
-                Esco.cost_discounted_cash_flow(year, Esco.cost_without_taxes[year]/(1+discount_rate**year))
+                Esco.cost_with_taxes.insert(year, loan.Return.interest_rate[year] + loan.Return.interest_paid[year])
+                Esco.cost_without_taxes.insert(year, loan.Return.interest_rate[year]/decimal.Decimal(1.24) + loan.Return.interest_paid[year])
+                Esco.cost_discounted_cash_flow.insert(year, Esco.cost_without_taxes[year]/(1+discount_rate**year))
         else: 
             Esco.cost_with_taxes.insert(0, self.cost)
             Esco.cost_without_taxes.insert(0, Esco.cost_with_taxes[0]/decimal.Decimal(1.24))
