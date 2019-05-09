@@ -12,15 +12,15 @@ import pandas as pd
 import decimal
 
 analysis_period = 25
-discount_rate = decimal.Decimal(0.05)
-#subsity_rate = 0.4
+discount_rate = 0.05
+#subsidy_rate = 0.4
 tax_lifetime = 10
 cost_growth_rate = {
-    "electricity": decimal.Decimal(1.5),
-    "diesel_oil": decimal.Decimal(2.5),
-    "motor_gasoline": decimal.Decimal(2.5), 
-    "natural_gas": decimal.Decimal(1.7), 
-    "biomass": decimal.Decimal(2)
+    "electricity": 1.015,
+    "diesel_oil": 1.025,
+    "motor_gasoline": 1.025, 
+    "natural_gas": 1.017, 
+    "biomass": 1.02
 }
 
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
@@ -28,16 +28,20 @@ conn_string = "host='localhost' dbname='energy_db' user='postgres' password='454
 conn = psycopg2.connect(conn_string)
 
 class Perspective():
-    def __init__(self, cost, lifetime, externalities, energy_conservation, tax_depreciation, subsity_rate):
+    sum_ratios = 0
+    num_ratios = 0
+    avg_ratios = 0
+    def __init__(self, cost, lifetime, externalities, energy_conservation, tax_depreciation, subsidy_rate):
         self.cost = cost
         self.lifetime = lifetime
         self.externalities = externalities
         self.energy_conservation = energy_conservation
         self.tax_depreciation = tax_depreciation
-        self.subsity_rate = subsity_rate
+        self.subsidy_rate = subsidy_rate
         self.savings_per_year_taxable = []
+        self.savings_per_year_taxable.append(0)
 
-        self.logistic_cost_without_taxes = self.cost*(1-self.subsity_rate)
+        self.logistic_cost_without_taxes = self.cost*(1-self.subsidy_rate)
     
         self.costs = pd.DataFrame([])
         self.benefits = pd.DataFrame([])
@@ -52,9 +56,16 @@ class Perspective():
             "natural_gas": [], 
             "biomass": []
         }
+        self.energy_savings_with_taxes["electricity"].append(0)
+        self.energy_savings_with_taxes["diesel_oil"].append(0)
+        self.energy_savings_with_taxes["motor_gasoline"].append(0)
+        self.energy_savings_with_taxes["natural_gas"].append(0)
+        self.energy_savings_with_taxes["biomass"].append(0)   
 
         #calculate energy savings with taxes
         self.calculate_savings_t()
+        Perspective.avg_ratios = Perspective.sum_ratios/Perspective.num_ratios
+        print(Perspective.avg_ratios)
         self.calculate_energy_cost_per_year()
 
         #calculate energy savings during period of analysis
@@ -70,49 +81,75 @@ class Perspective():
         self.measure_judgment()
 
     def create_benefitdf(self):
-        self.benefits["Energy_savings"] = self.savings_per_year_taxable
+        for year in range(analysis_period):
+            self.benefits = self.benefits.append(pd.DataFrame({'Discounted cash flow': 0, 'Energy savings': 0, 'Maintenance': 0, 'Residual value': 0, 'Tax depreciation': 0}, index=[0]), ignore_index=True)
+        self.benefits["Energy savings"] = self.savings_per_year_taxable
         for year in range(analysis_period):
             if year == analysis_period:
-                self.benefits = self.benefits.append(pd.DataFrame({'Residual_value': (2*self.lifetime-analysis_period)*self.logistic_cost_without_taxes*1.24/self.lifetime}, index=[0]), ignore_index=True)
+                self.benefits['Residual_value'][year] = 2*float(self.lifetime-analysis_period)*float(self.logistic_cost_without_taxes)*1.24/self.lifetime
             else: 
-                self.benefits = self.benefits.append(pd.DataFrame({'Residual_value': 0}, index=[0]), ignore_index=True)
-            if year + 1 > self.lifetime:
-                self.benefits = self.benefits.append(pd.DataFrame({'Maintenance': 0}, index=[0]), ignore_index=True)
+                self.benefits['Residual value'][year] = 0
+            if year + 1 > analysis_period:
+                self.benefits['Maintenance'][year] = 0
             else: 
-                self.benefits = self.benefits.append(pd.DataFrame({'Maintenance': 100}, index=[0]), ignore_index=True)
+                self.benefits['Maintenance'][year] = 100
             if year + 1 <= tax_lifetime:
-                self.benefits = self.benefits.append(pd.DataFrame({'Tax_depreciation': self.logistic_cost_without_taxes*self.tax_depreciation*decimal.Decimal(0.25)}, index=[0]), ignore_index=True)
+                self.benefits['Tax depreciation'][year] = self.logistic_cost_without_taxes*self.tax_depreciation*decimal.Decimal(0.25)
+            elif year + 1 - self.lifetime > 0 and year + 1 - self.lifetime <= tax_lifetime:
+                self.benefits['Tax depreciation'][year] = self.logistic_cost_without_taxes*self.tax_depreciation*decimal.Decimal(0.25)
             else:
-                self.benefits = self.benefits.append(pd.DataFrame({'Tax_depreciation': 0}, index=[0]), ignore_index=True)
-            self.benefits = self.benefits.append(pd.DataFrame({'Discounted_cash_flow': 0 }, index=[0]), ignore_index=True)
-            self.total_benefit_flow = self.benefits[['Discounted_cash_flow']].sum()
+                self.benefits['Tax depreciation'][year] = 0
+            #ipologismos proeks. tam. rois
+            self.benefits['Discounted cash flow'][year] = (self.benefits['Energy savings'][year] + self.benefits['Residual value'][year] + self.benefits['Maintenance'][year] + self.benefits['Tax depreciation'][year])/(1+discount_rate)**year 
+            self.total_benefit_flow = self.benefits[['Discounted cash flow']].sum()
+        print(self.benefits)
 
     def create_costdf(self):
         for year in range(analysis_period):
             if year==0 or year==self.lifetime:
-                self.costs = self.costs.append(pd.DataFrame({'Technology_cost': self.logistic_cost_without_taxes, 'Discounted_cash_flow': self.logistic_cost_without_taxes/(1+discount_rate)**year}, index=[0]), ignore_index=True)
+                self.costs = self.costs.append(pd.DataFrame({'Technology_cost': self.logistic_cost_without_taxes, 'Discounted_cash_flow': float(self.logistic_cost_without_taxes)/(1+discount_rate)**year}, index=[0]), ignore_index=True)
             else: 
                 self.costs = self.costs.append(pd.DataFrame({'Technology_cost': 0, 'Discounted_cash_flow': 0}, index=[0]), ignore_index=True)
             self.total_cost_flow = self.costs[['Discounted_cash_flow']].sum()
-        print(self.costs.head())
+        print(self.costs)
 
     def calculate_savings_t(self):
         try: 
             cursor1 = conn.cursor('cursor_backup', cursor_factory=psycopg2.extras.DictCursor)
             cursor1.execute('SELECT * FROM energy_cost LIMIT 1000')
-
+            #energy price WITHOUT tax
             for row in cursor1:
                 if(row[0].strip() == 'Electricity hh'):
-                    self.energy_savings_with_taxes["electricity"].insert(0, self.energy_conservation["electricity"]*row[3])
+                    self.energy_savings_with_taxes["electricity"][0] = self.energy_conservation["electricity"]*float(row[1])
+                    if self.energy_conservation['electricity'] > 0 :
+                        Perspective.num_ratios = Perspective.num_ratios +1 
+                        Perspective.sum_ratios = Perspective.sum_ratios - 1+cost_growth_rate['electricity']
+                    #print(row[2])
                 if(row[0].strip() == 'Diesel oil hh'):
-                    self.energy_savings_with_taxes["diesel_oil"].insert(0, self.energy_conservation["diesel_oil"]*row[3])
+                    self.energy_savings_with_taxes["diesel_oil"][0] = self.energy_conservation["diesel_oil"]*79.5
+                    #print(self.energy_savings_with_taxes['diesel_oil'][0])
+                    #print(row[1])
+                    if self.energy_conservation['diesel_oil'] > 0 :
+                        Perspective.num_ratios = Perspective.num_ratios +1 
+                        Perspective.sum_ratios = Perspective.sum_ratios - 1 +cost_growth_rate['diesel_oil']
                 if(row[0].strip() == 'Motor Gasoline'):
-                    self.energy_savings_with_taxes["motor_gasoline"].insert(0, self.energy_conservation["motor_gasoline"]*row[3])
+                    self.energy_savings_with_taxes["motor_gasoline"][0] = self.energy_conservation["motor_gasoline"]*float(row[1])
+                    #print(row[2])
+                    if self.energy_conservation['motor_gasoline'] > 0 :
+                        Perspective.num_ratios = Perspective.num_ratios +1 
+                        Perspective.sum_ratios = Perspective.sum_ratios - 1+cost_growth_rate['motor_gasoline']
                 if(row[0].strip() == 'Natural gas hh'):
-                    self.energy_savings_with_taxes["natural_gas"].insert(0, self.energy_conservation["natural_gas"]*row[3])
+                    self.energy_savings_with_taxes["natural_gas"][0] = self.energy_conservation["natural_gas"]*float(row[1])
+                    #print(row[1])
+                    if self.energy_conservation["natural_gas"] > 0 :
+                        Perspective.num_ratios = Perspective.num_ratios +1 
+                        Perspective.sum_ratios = Perspective.sum_ratios - 1+cost_growth_rate["natural_gas"]
                 if(row[0].strip() == 'Biomass hh'):
-                    self.energy_savings_with_taxes["biomass"].insert(0, self.energy_conservation["biomass"]*row[3])   
-        
+                    self.energy_savings_with_taxes["biomass"][0] = self.energy_conservation["biomass"]*float(row[1])
+                    #print(row[2])
+                    if self.energy_conservation["biomass"] > 0 :
+                        Perspective.num_ratios = Perspective.num_ratios +1 
+                        Perspective.sum_ratios = Perspective.sum_ratios - 1+cost_growth_rate["biomass"]
         except (Exception, psycopg2.Error) as error :
             print ("Error while connecting to PostgreSQL", error)
         finally:
@@ -120,22 +157,21 @@ class Perspective():
             if(conn):
                 cursor1.close()
     
-
     def savings_calculation_per_year(self):
-        self.savings_per_year_taxable.insert(0, self.energy_savings_with_taxes["electricity"][0]*self.energy_conservation["electricity"]+ self.energy_savings_with_taxes["diesel_oil"][0]*self.energy_conservation["diesel_oil"]+ self.energy_savings_with_taxes["motor_gasoline"][0]*self.energy_conservation["motor_gasoline"] + self.energy_savings_with_taxes["natural_gas"][0]*self.energy_conservation["natural_gas"] + self.energy_savings_with_taxes["biomass"][0]*self.energy_conservation["biomass"])
+        self.savings_per_year_taxable[0] = self.energy_savings_with_taxes["electricity"][0]+ self.energy_savings_with_taxes["diesel_oil"][0] + self.energy_savings_with_taxes["motor_gasoline"][0] + self.energy_savings_with_taxes["natural_gas"][0] + float(self.energy_savings_with_taxes["biomass"][0])
         for year in range(1, analysis_period):
             #with taxes
-            self.savings_per_year_taxable.insert(year, self.energy_savings_with_taxes["electricity"][year]*self.energy_conservation["electricity"]+ self.energy_savings_with_taxes["diesel_oil"][year]*self.energy_conservation["diesel_oil"]+ self.energy_savings_with_taxes["motor_gasoline"][year]*self.energy_conservation["motor_gasoline"] + self.energy_savings_with_taxes["natural_gas"][year]*self.energy_conservation["natural_gas"] + self.energy_savings_with_taxes["biomass"][year]*self.energy_conservation["biomass"])
+            self.savings_per_year_taxable.append(self.energy_savings_with_taxes["electricity"][year]+ self.energy_savings_with_taxes["diesel_oil"][year] + self.energy_savings_with_taxes["motor_gasoline"][year] + self.energy_savings_with_taxes["natural_gas"][year] + self.energy_savings_with_taxes["biomass"][year])
             
     def calculate_energy_cost_per_year(self):
         for year in range(1, analysis_period):
             #calculate energy costs during analysis period, based on growth rate of each energy genre
             #with taxes
-            self.energy_savings_with_taxes["electricity"].insert(year, self.energy_savings_with_taxes["electricity"][year-1]*cost_growth_rate["electricity"])
-            self.energy_savings_with_taxes["diesel_oil"].insert(year, self.energy_savings_with_taxes["diesel_oil"][year-1]*cost_growth_rate["diesel_oil"])
-            self.energy_savings_with_taxes["motor_gasoline"].insert(year, self.energy_savings_with_taxes["motor_gasoline"][year-1]*cost_growth_rate["motor_gasoline"])
-            self.energy_savings_with_taxes["natural_gas"].insert(year, self.energy_savings_with_taxes["natural_gas"][year-1]*cost_growth_rate["natural_gas"])
-            self.energy_savings_with_taxes["biomass"].insert(year, self.energy_savings_with_taxes["biomass"][year-1]*cost_growth_rate["biomass"])
+            self.energy_savings_with_taxes["electricity"].append(self.energy_savings_with_taxes["electricity"][year-1]*cost_growth_rate["electricity"])
+            self.energy_savings_with_taxes["diesel_oil"].append(self.energy_savings_with_taxes["diesel_oil"][year-1]*cost_growth_rate["diesel_oil"])
+            self.energy_savings_with_taxes["motor_gasoline"].append(self.energy_savings_with_taxes["motor_gasoline"][year-1]*cost_growth_rate["motor_gasoline"])
+            self.energy_savings_with_taxes["natural_gas"].append(self.energy_savings_with_taxes["natural_gas"][year-1]*cost_growth_rate["natural_gas"])
+            self.energy_savings_with_taxes["biomass"].append(float(self.energy_savings_with_taxes["biomass"][year-1])*cost_growth_rate["biomass"])
           
 
     def calculate_benefit_pv(self):
@@ -191,7 +227,7 @@ class Perspective():
         
         #calσculate B/C 
         b_to_c = self.benefit_pv/self.cost_pv
-        print(b_to_c)
+        #print(b_to_c)
         if (b_to_c > 1):
             judgement.insert(1, "investment sustainable according to B/C criterion")
         else: 
@@ -200,5 +236,8 @@ class Perspective():
         #calculate IRR
 
         return judgement
+    
+    def getEnergyBenefits(self):
+        return self.benefits['Energy savings']
 
  

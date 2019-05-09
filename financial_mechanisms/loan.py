@@ -2,7 +2,7 @@ import numpy as np
 import decimal
 
 
-annual_interest_rate = decimal.Decimal(0.08)
+annual_interest_rate = 0.08
 hip = round(annual_interest_rate, 2)
 annual_interest_rate = hip 
 
@@ -21,22 +21,22 @@ class Terms():
     #initial cost = total cost of investment, without sibsidy
     def __init__(self, loan_rate, initial_cost, subsity_rate):
         self.loan_rate = loan_rate
-        self.initial_cost = initial_cost
+        self.initial_cost = float(initial_cost)
         self.subsity_rate = subsity_rate
 
         Terms.own_funds_rate = 1 - self.loan_rate
-        Terms.investment_cost_taxable = self.initial_cost*(1-self.subsity_rate)
+        Terms.investment_cost_taxable = float(self.initial_cost)*float(1-self.subsity_rate)
         hip = round(Terms.investment_cost_taxable, 2)
         Terms.investment_cost_taxable = hip
         
         #calculate exact amounts (own, from loan)
-        Terms.own_funds_amount = Terms.own_funds_rate*Terms.investment_cost_taxable
+        Terms.own_funds_amount = float(Terms.own_funds_rate)*Terms.investment_cost_taxable
         Terms.loan_amount = self.loan_rate*Terms.investment_cost_taxable
         hip = round(Terms.loan_amount, 2)
         Terms.loan_amount = hip
 
         global subsidized_interest_rate 
-        subsidized_interest_rate = decimal.Decimal(0.3)*annual_interest_rate
+        subsidized_interest_rate = 0.3*annual_interest_rate
         hip = round(subsidized_interest_rate, 4)
         subsidized_interest_rate = hip
         
@@ -45,8 +45,8 @@ class Terms():
       
         global grace_period
         grace_period = 0
-        endiameso = decimal.Decimal(annual_interest_rate*grace_period)
-        Terms.interest_grace = Terms.loan_amount*endiameso
+        endiameso = annual_interest_rate*grace_period
+        Terms.interest_grace = Terms.loan_amount*float(endiameso)
         hip = round(Terms.interest_grace, 2)
         Terms.interest_grace = hip 
         
@@ -54,7 +54,7 @@ class Terms():
         repayment_amount = Terms.loan_amount + Terms.interest_grace
 
     def calculate_loan_period(self):
-        if Terms.loan_amount < 20000: 
+        if Terms.loan_amount < 15000: 
             return 3
         else: 
             return 10
@@ -95,7 +95,7 @@ class Return():
             Return.interest_rate[year] = hip 
             Return.interest.insert(year, Return.interest_rate_instalment[year] - Return.interest_rate[year])
             endiameso = repayment_amount - self.sum_xreolisio
-            Return.interest_subsidy.insert(year, endiameso*decimal.Decimal(subsidized_interest_rate))
+            Return.interest_subsidy.insert(year, endiameso*subsidized_interest_rate)
             Return.interest_paid.insert(year, Return.interest[year] - Return.interest_subsidy[year])
             Return.unpaid.insert(year, Return.unpaid[year-1] - Return.interest_rate[year])
             print(Return.unpaid[year])

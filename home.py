@@ -8,7 +8,6 @@ from actors import esco
 
 import decimal 
 
-
 def main():
     #select actors 
     #select measures 
@@ -34,19 +33,31 @@ def main():
         
     else: 
         analysis = input('Select analysis: ')
-    
-    #analysis from business perspective
-    persp = investment_analysis_perspective.Perspective(measure.get_cost(), measure.get_lifetime(), measure.get_externalities(), measure.get_energy_conservation(), decimal.Decimal(0.1), decimal.Decimal(0.4))
-
     """
+    #analysis from business perspective
+    #persp = investment_analysis_perspective.Perspective(measure.get_cost(), measure.get_lifetime(), measure.get_externalities(), measure.get_energy_conservation(), decimal.Decimal(0.1), decimal.Decimal(0.4))
+    """
+    externalities = []
+    for i in range(0, 25):
+        externalities.insert(i, 0)
 
+    energy_conservation = {
+            "electricity": 0,
+            "diesel_oil": 42.0,
+            "motor_gasoline": 0, 
+            "natural_gas": 65.0, 
+            "biomass": 0
+        }
+
+    persp = investment_analysis_perspective.Perspective(33800, 20, externalities, energy_conservation, decimal.Decimal(0.1), decimal.Decimal(0.4))
+    """
     #check loan 
-    oroi_daneiou = loan.Terms(decimal.Decimal(0.5), 41912, decimal.Decimal(0.4))
-    epistrofi_daneiou = loan.Return()
+    #oroi_daneiou = loan.Terms(decimal.Decimal(0.5), 41912, decimal.Decimal(0.4))
+    #epistrofi_daneiou = loan.Return()
    
     esco_loan = True
    
-    fund_take_over_rate = input("Pososto diamoirasmou ofelous: ")
+    fund_take_over_rate = float(input("Pososto analipsis kostous: "))
     #kostos esco = poso diamoirasmou*initial cost
     esco_cba = esco.Esco(fund_take_over_rate*41912, 8, 0.7, esco_loan)   
 
