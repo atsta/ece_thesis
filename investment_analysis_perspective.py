@@ -13,8 +13,8 @@ import decimal
 
 analysis_period = 25
 discount_rate = 0.05
-#subsidy_rate = 0.4
 tax_lifetime = 10
+
 cost_growth_rate = {
     "electricity": 1.015,
     "diesel_oil": 1.025,
@@ -120,32 +120,32 @@ class Perspective():
             #energy price WITHOUT tax
             for row in cursor1:
                 if(row[0].strip() == 'Electricity hh'):
-                    self.energy_savings_with_taxes["electricity"][0] = self.energy_conservation["electricity"]*float(row[1])
+                    self.energy_savings_with_taxes["electricity"][0] = self.energy_conservation["electricity"]*float(row[2])
                     if self.energy_conservation['electricity'] > 0 :
                         Perspective.num_ratios = Perspective.num_ratios +1 
                         Perspective.sum_ratios = Perspective.sum_ratios - 1+cost_growth_rate['electricity']
                     #print(row[2])
                 if(row[0].strip() == 'Diesel oil hh'):
-                    self.energy_savings_with_taxes["diesel_oil"][0] = self.energy_conservation["diesel_oil"]*79.5
+                    self.energy_savings_with_taxes["diesel_oil"][0] = self.energy_conservation["diesel_oil"]*float(row[2])
                     #print(self.energy_savings_with_taxes['diesel_oil'][0])
                     #print(row[1])
                     if self.energy_conservation['diesel_oil'] > 0 :
                         Perspective.num_ratios = Perspective.num_ratios +1 
                         Perspective.sum_ratios = Perspective.sum_ratios - 1 +cost_growth_rate['diesel_oil']
                 if(row[0].strip() == 'Motor Gasoline'):
-                    self.energy_savings_with_taxes["motor_gasoline"][0] = self.energy_conservation["motor_gasoline"]*float(row[1])
+                    self.energy_savings_with_taxes["motor_gasoline"][0] = self.energy_conservation["motor_gasoline"]*float(row[2])
                     #print(row[2])
                     if self.energy_conservation['motor_gasoline'] > 0 :
                         Perspective.num_ratios = Perspective.num_ratios +1 
                         Perspective.sum_ratios = Perspective.sum_ratios - 1+cost_growth_rate['motor_gasoline']
                 if(row[0].strip() == 'Natural gas hh'):
-                    self.energy_savings_with_taxes["natural_gas"][0] = self.energy_conservation["natural_gas"]*float(row[1])
+                    self.energy_savings_with_taxes["natural_gas"][0] = self.energy_conservation["natural_gas"]*float(row[2])
                     #print(row[1])
                     if self.energy_conservation["natural_gas"] > 0 :
                         Perspective.num_ratios = Perspective.num_ratios +1 
                         Perspective.sum_ratios = Perspective.sum_ratios - 1+cost_growth_rate["natural_gas"]
                 if(row[0].strip() == 'Biomass hh'):
-                    self.energy_savings_with_taxes["biomass"][0] = self.energy_conservation["biomass"]*float(row[1])
+                    self.energy_savings_with_taxes["biomass"][0] = self.energy_conservation["biomass"]*float(row[2])
                     #print(row[2])
                     if self.energy_conservation["biomass"] > 0 :
                         Perspective.num_ratios = Perspective.num_ratios +1 

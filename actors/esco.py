@@ -23,8 +23,7 @@ class Esco():
         self.contract_period = contract_period
         self.benefit_sharing = benefit_sharing
         self.took_loan = took_loan
-        #self.fund_take_over_rate = fund_take_over_rate
-
+        
         externalities = []
         for i in range(0, 25):
             externalities.insert(i, 0)
