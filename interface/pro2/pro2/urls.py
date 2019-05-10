@@ -20,7 +20,7 @@ from app2 import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^users/', include('app2.urls')),
-    path('admin/', admin.site.urls),
-    url(r'^formpage/', include('app2.urls')),
+    path('admin/', admin.site.urls), 
+    url(r'^users/', views.users, name='users'),
+    url(r'^measure/', views.measure, name='measure'),
 ]
