@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <style>
+            .body {background-color: powderblue;}
+            .h1   {color: blue;}
+            .btn {
+                position: absolute;
+                top: 25%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                padding: 15px 25px;
+                font-size: 24px;
+                cursor: pointer;
+                text-align: center;
+                text-decoration: none;
+                outline: none;
+                color: #fff;
+                background-color: rgb(165, 98, 139);
+            }
+            .jumbotron {
+                size: 100px;
+            }
+        </style>
         <meta charset="utf-8">
         <title>Home</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -9,7 +30,7 @@
         <div class="container">
             <div class="jumbotron">
                     <h1>Welcome to MuPIA!</h1>
-                    <h2>Go to /measure to give measure specs..</h2>
+                    <a class="btn" left ="50%" href="/measure">Check sustainability</a>
             </div>
         </div>
     </body>
