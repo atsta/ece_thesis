@@ -24,4 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls), 
     url(r'^users/', views.users, name='users'),
     url(r'^measure/', views.measure, name='measure'),
+    url(r'^analysis/', views.analysis, name='analysis'),
 ]

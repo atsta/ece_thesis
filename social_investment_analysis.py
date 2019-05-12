@@ -29,7 +29,7 @@ class Social():
     savings_per_year_nontaxable = []
     pure_cash_flow = []
     residual_value = 0
-    avg_ratios
+    avg_ratios= 0
 
     """
 
@@ -135,25 +135,25 @@ class Social():
     
     def calculate_energy_cost_per_year(self):
         for year in range(1, analysis_period):
-            self.energy_savings_without_taxes["electricity"].append(self.energy_savings_without_taxes["electricity"][year-1]*cost_growth_rate["electricity"])
-            self.energy_savings_without_taxes["diesel_oil"].append(self.energy_savings_without_taxes["diesel_oil"][year-1]*cost_growth_rate["diesel_oil"])
-            self.energy_savings_without_taxes["motor_gasoline"].append(self.energy_savings_without_taxes["motor_gasoline"][year-1]*cost_growth_rate["motor_gasoline"])
-            self.energy_savings_without_taxes["natural_gas"].append(self.energy_savings_without_taxes["natural_gas"][year-1]*cost_growth_rate["natural_gas"])
-            self.energy_savings_without_taxes["biomass"].append(self.energy_savings_without_taxes["biomass"][year-1]*cost_growth_rate["biomass"])
+            self.energy_savings_without_taxes["electricity"].append(float(self.energy_savings_without_taxes["electricity"][year-1])*cost_growth_rate["electricity"])
+            self.energy_savings_without_taxes["diesel_oil"].append(float(self.energy_savings_without_taxes["diesel_oil"][year-1])*cost_growth_rate["diesel_oil"])
+            self.energy_savings_without_taxes["motor_gasoline"].append(float(self.energy_savings_without_taxes["motor_gasoline"][year-1])*cost_growth_rate["motor_gasoline"])
+            self.energy_savings_without_taxes["natural_gas"].append(float(self.energy_savings_without_taxes["natural_gas"][year-1])*cost_growth_rate["natural_gas"])
+            self.energy_savings_without_taxes["biomass"].append(float(self.energy_savings_without_taxes["biomass"][year-1])*cost_growth_rate["biomass"])
 
     def calculate_benefit_pv(self):
         # init
         Social.benefit_per_year.append(Social.savings_per_year_nontaxable[0] + self.externalities[0])
-        total_flow = Social.benefit_per_year[0]/(1+discount_rate)**0
+        total_flow = float(Social.benefit_per_year[0])/(1+discount_rate)**0
 
         # residual value at the end of analysis period
         Social.residual_value = (2*self.lifetime - analysis_period)/(self.cost/self.lifetime)
 
         # annual calculation 
         for year in range(1, analysis_period):
-            Social.benefit_per_year.append(Social.savings_per_year_nontaxable[year] + self.externalities[year])
+            Social.benefit_per_year.append(Social.savings_per_year_nontaxable[year] + float(self.externalities[year]))
             if year == analysis_period -1: 
-                total_flow = total_flow + Social.benefit_per_year[year]/(1 + discount_rate)**year + Social.residual_value
+                total_flow = total_flow + Social.benefit_per_year[year]/(1 + discount_rate)**year + float(Social.residual_value)
             else: 
                 total_flow = total_flow + Social.benefit_per_year[year]/(1 + discount_rate)**year 
         
@@ -163,7 +163,7 @@ class Social():
     def calculate_cost_pv(self):
         # init
         Social.cost_per_year.append(self.cost)
-        total_flow = Social.cost_per_year[0]/(1+discount_rate)**0
+        total_flow = float(Social.cost_per_year[0])/(1+discount_rate)**0
 
         # annual calculation 
         for year in range(1, analysis_period):
@@ -171,7 +171,7 @@ class Social():
                 Social.cost_per_year.append(self.cost)
             else: 
                 Social.cost_per_year.append(0)
-            total_flow = total_flow + Social.cost_per_year[year]/(1+discount_rate)**year
+            total_flow = total_flow + float(Social.cost_per_year[year])/(1+discount_rate)**year
         
         return total_flow
 
@@ -194,9 +194,9 @@ class Social():
     def calculate_cash_flow(self):
         for year in range(analysis_period):
             if year == analysis_period -1: 
-                Social.pure_cash_flow.append(Social.savings_per_year_nontaxable[year] + Social.residual_value + self.externalities[year] - Social.cost_per_year[year])
+                Social.pure_cash_flow.append(float(Social.savings_per_year_nontaxable[year]) + float(Social.residual_value) + float(self.externalities[year]) - float(Social.cost_per_year[year]))
             else: 
-                Social.pure_cash_flow.append(Social.savings_per_year_nontaxable[year] + self.externalities[year] - Social.cost_per_year[year])
+                Social.pure_cash_flow.append(float(Social.savings_per_year_nontaxable[year]) + float(self.externalities[year]) - float(Social.cost_per_year[year]))
 
 
     def calculate_irr(self):
@@ -211,7 +211,7 @@ class Social():
             pbp = pbp +1 
         return pbp
 
-    def calculate_descountedPBP(self):
+    def calculate_discountedPBP(self):
         dpbp = np.log((Social.pbp*(1+discount_rate))*((1 + Social.avg_ratios)/(1+discount_rate)-1)+1)/np.log((1 + Social.avg_ratios)/(1+discount_rate))
         return dpbp
 

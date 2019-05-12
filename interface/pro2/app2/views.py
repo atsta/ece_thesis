@@ -3,6 +3,8 @@ from django.shortcuts import render
 from app2.forms import NewUserForm 
 from app2.forms import NewMeasureForm
 
+from app2.models import Measure
+
 # Create your views here.
 
 # home page view 
@@ -36,11 +38,14 @@ def measure(request):
                 form = NewMeasureForm(request.POST)
                 if form.is_valid():
                         form.save(commit=True)
-                        return index(request)
+                        return analysis(request)
                 else: 
                         print('Error: Invalid form')
                         
         return render(request,'app2/measure.html', {'form': form})
         
-
+def analysis(request): 
+        first_measure = Measure.objects.raw('SELECT * FROM app2_measure LIMIT 5')[0]
+        print(first_measure.name) 
+        return render(request,'app2/analysis.html')
 
