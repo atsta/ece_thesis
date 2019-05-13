@@ -6,15 +6,15 @@
     </head>
     <body>
         <div class="container">
-            <h1>Give measure specs:</h1>
+            <p>Choose analysis type:</p>
             <form method="POST">
-                <!-- as_p so as every widget is handled as paragraph-->
-                {{ form.as_p }} 
-                {% csrf_token %}
-                <input type="submit" class="btn btn-primary" value="OK">
+                <select name="analysis">
+                    <option value="social" selected>Social</option>
+                    <option value="financial">Financial</option>
+                </select>
             </form>
-            <h1>Or..</h1>
             <a class="link" href="/analysis">Choose from existing measures</a>
+            <h1>Find measures for your portfolio..</h1>
         </div>
     </body>
 </html>

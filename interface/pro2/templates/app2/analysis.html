@@ -5,8 +5,12 @@
         <title>Analysis</title>
     </head>
     <body>
+        <h1>Select measure and analysis type:</h1>
         <div class="container">
-            <h1>Select measure:</h1>
-            <h2>Select analysis:</h2>
+            <form method="POST">
+                {{form.as_p}}
+                {% csrf_token %}
+                <input type="submit" class="btn" value="OK">
+            </form>
         </div>
 </html>

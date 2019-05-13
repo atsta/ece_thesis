@@ -22,7 +22,6 @@ from app2 import views
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     path('admin/', admin.site.urls), 
-    url(r'^users/', views.users, name='users'),
     url(r'^measure/', views.measure, name='measure'),
     url(r'^analysis/', views.analysis, name='analysis'),
 ]
