@@ -29,3 +29,4 @@ class Measure(Energy_Conservation):
     description = models.TextField(default=' ')
     category = models.CharField()
     measure_type = models.CharField()
+
