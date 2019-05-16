@@ -12,3 +12,5 @@ class NewMeasureForm(forms.ModelForm):
 class SomeInput(forms.Form):
     measure = forms.CharField(max_length=15)
     analysis = forms.CharField(max_length=15)
+
+#class ChooseMeasures(forms.Form):

@@ -25,4 +25,5 @@ urlpatterns = [
     url(r'^measure/', views.measure, name='measure'),
     url(r'^analysis/', views.analysis, name='analysis'),
     url(r'^measure_search_results/', views.measure_search_results, name='measure_search_results'),
+    url(r'^grab_selected_results/', views.grab_selected_results, name='grab_selected_results'),
 ]

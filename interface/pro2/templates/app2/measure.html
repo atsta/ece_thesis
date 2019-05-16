@@ -31,7 +31,7 @@
                     <option value="technical" selected>Technical</option>
                     <option value="behavioral">Behavioral</option>
                 </select>
-            <input type="submit" class="btn" value="OK">
+                <input type="submit" class="btn" value="OK">
             </form>
             <form method="GET">
                 {% csrf_token %}
@@ -46,11 +46,14 @@
             <br>
             <br>
             <a class="link" href="/analysis">Choose from existing measures</a>
-            <ul>
+            <form method="POST" multiple action='{% url "grab_selected_results" %}'>
+                {% csrf_token %}
                 {% for element in results %}
-                    <li>{{ element }}</li>
+                <input type="checkbox" name="measure" value ={{element.name}}/> {{element.name}} <br>
                 {% endfor %}
-                </ul>
+                <input type="submit" class="btn" value="OK">
+            </form>
+
         </div>
     </body>
 </html>

@@ -3,7 +3,7 @@ from django.shortcuts import render
 from app2.forms import NewMeasureForm
 from . import forms
 
-from app2.models import Measure
+from app2.models import Measure, Social
 
 from app2 import energy_measure
 
@@ -35,9 +35,21 @@ def measure_search_results(request):
         selected_category = request.GET.get('category')
         selected_type = request.GET.get('type')
 
-        results = Measure.objects.filter(measure_type=selected_type, category=selected_category)
-        print(results)
+        results = Measure.objects.filter(measure_type=selected_type)
+        #, category=selected_category)
+        #print(results)
         return render(request, 'app2/measure.html', {'results': results})
+
+def grab_selected_results(request):
+        selected = request.POST.getlist('measure')
+        print(selected)
+        social = []
+        for element in selected:
+                print(element)
+                hip = Social(measure=element)
+                hip.save()
+                social.append(hip)
+        return render(request, 'app2/cba.html', {'selected': selected})
 
 
 """
