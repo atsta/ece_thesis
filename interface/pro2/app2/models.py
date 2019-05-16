@@ -22,11 +22,14 @@ class Energy_Conservation(models.Model):
     natural_gas7 = models.IntegerField(default=0)
     biomass7 = models.IntegerField(default=0)
 
+    class Meta:
+        abstract = True
+
 class Measure(Energy_Conservation):
     name = models.CharField(max_length=150, unique=True)
     cost = models.IntegerField()
     lifetime = models.IntegerField()
     description = models.TextField(default=' ')
-    category = models.CharField()
-    measure_type = models.CharField()
+    category = models.CharField(max_length=150, default=' ')
+    measure_type = models.CharField(max_length=150, default=' ')
 

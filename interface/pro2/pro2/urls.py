@@ -24,4 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls), 
     url(r'^measure/', views.measure, name='measure'),
     url(r'^analysis/', views.analysis, name='analysis'),
+    url(r'^measure_search_results/', views.measure_search_results, name='measure_search_results'),
 ]

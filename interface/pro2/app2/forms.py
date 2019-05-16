@@ -8,6 +8,7 @@ class NewMeasureForm(forms.ModelForm):
         model = Measure
         fields = '__all__'
 
+
 class SomeInput(forms.Form):
     measure = forms.CharField(max_length=15)
     analysis = forms.CharField(max_length=15)

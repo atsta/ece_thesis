@@ -13,8 +13,11 @@ from app2 import energy_measure
 def index(request):
     return render(request,'app2/index.html')
 
-
 def measure(request):
+    return render(request,'app2/measure.html')
+
+
+def analysis(request):
         form = NewMeasureForm()
         if request.method == "POST":
                 form = NewMeasureForm(request.POST)
@@ -24,8 +27,21 @@ def measure(request):
                 else: 
                         print('Error: Invalid form')
                         
-        return render(request,'app2/measure.html', {'form': form})
+        return render(request, 'app2/analysis.html', {'form': form})
         
+
+
+def measure_search_results(request):
+        selected_category = request.GET.get('category')
+        selected_type = request.GET.get('type')
+
+        results = Measure.objects.filter(measure_type=selected_type, category=selected_category)
+        print(results)
+        return render(request, 'app2/measure.html', {'results': results})
+
+
+"""
+
 def analysis(request): 
         #first_measure = Measure.objects.raw('SELECT * FROM app2_measure LIMIT 5')[0]
         #print(first_measure.name) 
@@ -41,3 +57,4 @@ def analysis(request):
 
         return render(request,'app2/analysis.html', {'form': form})
 
+"""
