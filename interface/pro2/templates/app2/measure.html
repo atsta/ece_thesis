@@ -45,6 +45,7 @@
             
             <br>
             <br>
+            <!-- {{ somevariable|cut:"0" }} to cut tha slash from measure names -->
             <a class="link" href="/analysis">Choose from existing measures</a>
             <form method="POST" multiple action='{% url "grab_selected_results" %}'>
                 {% csrf_token %}

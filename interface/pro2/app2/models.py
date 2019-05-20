@@ -51,5 +51,5 @@ class Measure(Energy_Conservation):
 
 class Social(models.Model):
     measure = models.CharField(max_length=150, default=' ')
-    #costs = models.ManyToManyField(Costs)
-    #benefits = models.ManyToManyField(Benefits)
+    costs = models.ManyToManyField(Costs)
+    benefits = models.ManyToManyField(Benefits)

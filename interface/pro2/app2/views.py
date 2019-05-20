@@ -42,31 +42,26 @@ def measure_search_results(request):
 
 def grab_selected_results(request):
         selected = request.POST.getlist('measure')
-        print(selected)
+        request.session['list'] = selected
+        #print(selected)
         social = []
         for element in selected:
-                print(element)
+                #sprint(element)
                 hip = Social(measure=element)
                 hip.save()
                 social.append(hip)
         return render(request, 'app2/cba.html', {'selected': selected})
 
+def choose_costs_and_benefits(request):
+        selected = request.session['list']
+        costs = {}
+        benefits = {}
+        for item in selected:
+                benefit = "%s%s" % (item, "0")
+                benefits[item] = request.POST.getlist(benefit)
+                cost = "%s%s" % (item, "1")
+                costs[item] = request.POST.getlist(cost)
+                #print(benefits[item])
+                #print(costs[item])
+        return render(request, 'app2/cba.html', {'costs': costs, 'benefits': benefits})
 
-"""
-
-def analysis(request): 
-        #first_measure = Measure.objects.raw('SELECT * FROM app2_measure LIMIT 5')[0]
-        #print(first_measure.name) 
-        #measure = energy_measure.Measure(first_measure.name)
-        form = forms.SomeInput()
-
-        if request.method == 'POST':
-                form = forms.SomeInput(request.POST)
-                if form.is_valid():
-                        print("Measure: "+ form.cleaned_data['measure'])
-                        print("Analysis: " + form.cleaned_data['analysis'])
-
-
-        return render(request,'app2/analysis.html', {'form': form})
-
-"""

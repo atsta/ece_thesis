@@ -7,6 +7,31 @@
     <body>
         <h1>Select cost and benefit categories</h1>
         <div class="container">
+            <form method="POST" action='{% url "choose_costs_and_benefits" %}'>
+                {% csrf_token %}
+                {% for element in selected %}
 
+                <p>Select benefits for measure {{element}}</p>
+                <!-- measure name0 as name in benefits input -->
+                {% with element|add:"0" as benefit %}
+                <input type="checkbox" name={{benefit}} value ='energy_savings'/>Energy Savings<br>
+                <input type="checkbox" name={{benefit}} value ='maintenance'/>Maintenance<br>
+                <input type="checkbox" name={{benefit}} value ='externalities'/>Externalities<br>
+                <input type="checkbox" name={{benefit}} value ='value_growth'/>Value Growth<br>
+                <input type="checkbox" name={{benefit}} value ='work_efficiency'/>Work Efficiency<br>
+                <input type="checkbox" name={{benefit}} value ='employability'/>Employability<br>
+                {% endwith %}
+
+                <p>Select costs for measure {{element}}</p>
+                <!-- measure name1 as name in costs input -->
+                {% with element|add:"1" as cost %}
+                <input type="checkbox" name={{cost}} value ='equipment'/>Equipment<br>
+                <input type="checkbox" name={{cost}} value ='management'/>Management Cost<br>
+                <input type="checkbox" name={{cost}} value ='reduced_income'/>Reduced Income<br>
+                {% endwith %}
+
+                {% endfor %}
+                <input type="submit" class="btn" value="OK">
+            </form>
         </div>
 </html>
