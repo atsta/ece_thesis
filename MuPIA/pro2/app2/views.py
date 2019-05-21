@@ -5,7 +5,7 @@ from . import forms
 
 from app2.models import Measure, Social
 
-from app2 import energy_measure
+from modules import energy_measure
 
 # Create your views here.
 
@@ -29,7 +29,6 @@ def analysis(request):
                         
         return render(request, 'app2/analysis.html', {'form': form})
         
-
 
 def measure_search_results(request):
         selected_category = request.GET.get('category')
@@ -63,5 +62,17 @@ def choose_costs_and_benefits(request):
                 costs[item] = request.POST.getlist(cost)
                 #print(benefits[item])
                 #print(costs[item])
-        return render(request, 'app2/cba.html', {'costs': costs, 'benefits': benefits})
+        return render(request, 'app2/cba_params_and_results.html', {'costs': costs, 'benefits': benefits})
 
+
+def grab_params_and_give_results(request):
+        chose_lifetime = request.POST.getlist('lifetime')
+        if chose_lifetime == []:
+                analysis_period = request.POST.get('analysis_period')
+        else:
+                #tbd, for every measure selected
+                analysis_period = 0
+        discount_rate = request.POST.get('discount_rate')
+        print(analysis_period)
+        print(discount_rate)
+        return render(request, 'app2/cba_params_and_results.html', {'analysis_period': analysis_period, 'discount_rate': discount_rate})

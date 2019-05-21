@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Params and Results</title>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Select calculation parameters:</h1>
+            <form method="POST" action='{% url "grab_params_and_give_results" %}'>
+                {% csrf_token %}
+                <!-- min, max num limits to be defined -->
+                <h3>Enter Analysis Period</h3>
+                <input type="number" name="analysis_period" id="ManuallyEnterAnalysisPeriod"> <br>
+                <input type="checkbox" name="lifetime" onchange="document.getElementById('ManuallyEnterAnalysisPeriod').disabled = this.checked;"> The same as measure lifetime <br>
+                <h3>Enter Discount Rate</h3>
+                <input type="number" name="discount_rate" min="1" max="15" step="0.1" > % 
+                <br>
+                <br>
+                <input type="submit" class="btn btn-primary" value="OK">
+                <input type="reset">
+            </form>
+        </div>
+    </body>
+</html>

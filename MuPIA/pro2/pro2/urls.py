@@ -1,4 +1,4 @@
-"""learning_templates URL Configuration
+"""pro2 URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.1/topics/http/urls/
@@ -15,11 +15,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from basic_app import views
-from django.conf.urls import url, include
+from django.conf.urls import include, url
+
+from app2 import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    path('admin/', admin.site.urls),
-    url(r'^basic_app/', include('basic_app.urls'))
+    path('admin/', admin.site.urls), 
+    url(r'^measure/', views.measure, name='measure'),
+    url(r'^analysis/', views.analysis, name='analysis'),
+    url(r'^measure_search_results/', views.measure_search_results, name='measure_search_results'),
+    url(r'^grab_selected_results/', views.grab_selected_results, name='grab_selected_results'),
+    url(r'^choose_costs_and_benefits/', views.choose_costs_and_benefits, name='choose_costs_and_benefits'),  
+    url(r'^grab_params_and_give_results/', views.grab_params_and_give_results, name='grab_params_and_give_results'),   
+ 
 ]
