@@ -3,9 +3,9 @@ from django.shortcuts import render
 from app2.forms import NewMeasureForm
 from . import forms
 
-from app2.models import Measure, Social
+from app2.models import Measure, Social, Energy_Conservation, Costs, Benefits
 
-from modules import energy_measure
+from modules import energy_measure, social_investment_analysis
 
 # Create your views here.
 
@@ -23,7 +23,13 @@ def analysis(request):
                 form = NewMeasureForm(request.POST)
                 if form.is_valid():
                         form.save(commit=True)
-                        return analysis(request)
+                        e = Energy_Conservation(measure=form.get_measure(), biomass3=13)
+                        e.save()
+                        c = Costs(measure=form)
+                        c.save()
+                        b = Benefits(measure=form)
+                        b.save()
+                        #return analysis(request)
                 else: 
                         print('Error: Invalid form')
                         
@@ -75,4 +81,19 @@ def grab_params_and_give_results(request):
         discount_rate = request.POST.get('discount_rate')
         print(analysis_period)
         print(discount_rate)
+        energy_conservation = {
+            "electricity": 0,
+            "diesel_oil": 42.0,
+            "motor_gasoline": 0, 
+            "natural_gas": 65.0, 
+            "biomass": 0
+        }
+         
+        externalities = []
+        for i in range(0, 25):
+                externalities.insert(i, 2.11)
+
+        #scba = social_investment_analysis.Social(33800, 20, externalities, energy_conservation)
+        #print(scba.pbp)
+        #  print(scba.dpbp)
         return render(request, 'app2/cba_params_and_results.html', {'analysis_period': analysis_period, 'discount_rate': discount_rate})

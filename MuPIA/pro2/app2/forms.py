@@ -8,6 +8,9 @@ class NewMeasureForm(forms.ModelForm):
         model = Measure
         fields = '__all__'
 
+        def get_measure(self):
+            return self.model
+
 
 class SomeInput(forms.Form):
     measure = forms.CharField(max_length=15)

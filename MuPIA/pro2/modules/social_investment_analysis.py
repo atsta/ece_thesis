@@ -87,34 +87,35 @@ class Social():
             cursor1.execute('SELECT * FROM energy_cost LIMIT 1000')
             for row in cursor1:
                 if(row[0].strip() == 'Electricity hh'):
-                    self.energy_savings_without_taxes["electricity"].append(self.energy_conservation["electricity"]*row[2])
+                    self.energy_savings_without_taxes["electricity"].append(self.energy_conservation["electricity"]*float(row[2]))
                     if self.energy_conservation['electricity'] > 0 :
                             num_ratios = num_ratios +1 
                             sum_ratios = sum_ratios - 1+cost_growth_rate['electricity']
+                    print(self.energy_savings_without_taxes["electricity"])
                 if(row[0].strip() == 'Diesel oil hh'):
-                    self.energy_savings_without_taxes["diesel_oil"].append(self.energy_conservation["diesel_oil"]*row[2])
+                    self.energy_savings_without_taxes["diesel_oil"].append(self.energy_conservation["diesel_oil"]*float(row[2]))
                     if self.energy_conservation['diesel_oil'] > 0 :
                         num_ratios = num_ratios +1 
                         sum_ratios = sum_ratios - 1 +cost_growth_rate['diesel_oil']
-                    #print(self.energy_savings_without_taxes["diesel_oil"])
+                    print(self.energy_savings_without_taxes["diesel_oil"])
                 if(row[0].strip() == 'Motor Gasoline'):
-                    self.energy_savings_without_taxes["motor_gasoline"].append(self.energy_conservation["motor_gasoline"]*row[2])
+                    self.energy_savings_without_taxes["motor_gasoline"].append(self.energy_conservation["motor_gasoline"]*float(row[2]))
                     if self.energy_conservation['motor_gasoline'] > 0 :
                         num_ratios = num_ratios +1 
                         sum_ratios = sum_ratios - 1+cost_growth_rate['motor_gasoline']
-                    #print(self.energy_savings_without_taxes["motor_gasoline"])
+                    print(self.energy_savings_without_taxes["motor_gasoline"])
                 if(row[0].strip() == 'Natural gas hh'):
-                    self.energy_savings_without_taxes["natural_gas"].append(self.energy_conservation["natural_gas"]*row[2])
+                    self.energy_savings_without_taxes["natural_gas"].append(self.energy_conservation["natural_gas"]*float(row[2]))
                     if self.energy_conservation["natural_gas"] > 0 :
                         num_ratios = num_ratios +1 
                         sum_ratios = sum_ratios - 1+cost_growth_rate["natural_gas"]
-                    #print(self.energy_savings_without_taxes["natural_gas"])
+                    print(self.energy_savings_without_taxes["natural_gas"])
                 if(row[0].strip() == 'Biomass hh'):
-                    self.energy_savings_without_taxes["biomass"].append(self.energy_conservation["biomass"]*row[2])
+                    self.energy_savings_without_taxes["biomass"].append(self.energy_conservation["biomass"]*float(row[2]))
                     if self.energy_conservation["biomass"] > 0 :
                         num_ratios = num_ratios +1 
                         sum_ratios = sum_ratios - 1+cost_growth_rate["biomass"]
-                    #print(self.energy_savings_without_taxes["biomass"])    
+                    print(self.energy_savings_without_taxes["biomass"])    
             Social.avg_ratios = sum_ratios/num_ratios
             #print(self.energy_savings_without_taxes["diesel_oil"])
             #print(self.energy_conservation["diesel_oil"])   
