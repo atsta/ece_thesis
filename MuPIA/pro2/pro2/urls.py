@@ -28,5 +28,6 @@ urlpatterns = [
     url(r'^grab_selected_results/', views.grab_selected_results, name='grab_selected_results'),
     url(r'^choose_costs_and_benefits/', views.choose_costs_and_benefits, name='choose_costs_and_benefits'),  
     url(r'^grab_params_and_give_results/', views.grab_params_and_give_results, name='grab_params_and_give_results'),   
+    url(r'^actor/', views.actor, name='actor_choice'),
  
 ]

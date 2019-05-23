@@ -66,14 +66,19 @@ class Costs(models.Model):
     def __str__(self):
         return "%s Costs of measure: " % self.measure.name
 
+class Portfolio(models.Model):
+    name = models.CharField(primary_key=True, max_length=150, unique=True, default=None)
+    genre = models.CharField(max_length=150, default=None)
+    analysis_pieces = models.CharField(max_length=300, default=None)
+    
 
 class Social(models.Model):
-    name = models.CharField(max_length=150, default=None)
-    measure = models.ManyToManyField(Measure)
+    name = models.CharField(primary_key=True, max_length=150, unique=True, default=None)
+    measure = models.ForeignKey(Measure, on_delete=models.CASCADE, default=None)
 
     #selected costs and benefits for this analysis
-    costs = models.CharField(max_length=150, default=None)
-    benefits = models.CharField(max_length=150, default=None)
+    costs = models.CharField(max_length=150, default=None, null=True)
+    benefits = models.CharField(max_length=150, default=None, null=True)
 
     #analysis specs
     discount_rate = models.FloatField(default=0.03)
