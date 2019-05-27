@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Measure</title>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Choose financial mechanism:</h1>
+            <form action='/grab_params_and_proceed/' method="POST">
+                {% csrf_token %}
+                {{form.as_p}}
+                <input type="submit" class="btn" value="OK">
+            </form>
+            <br>
+            <form method="POST" action='/financial_mechanism_params/'>
+                {% csrf_token %}
+                {{form1.as_p}}
+                <input type="submit" class="btn" value="OK">
+            </form>
+        </div>
+    </body>
+</html>

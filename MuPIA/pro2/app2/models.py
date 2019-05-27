@@ -19,7 +19,7 @@ class Measure(models.Model):
     def __str__(self):
         return "%s Measure: " % self.name
 
-
+        
 class Energy_Conservation(models.Model):
     measure = models.OneToOneField(Measure, 
                                 on_delete=models.CASCADE,

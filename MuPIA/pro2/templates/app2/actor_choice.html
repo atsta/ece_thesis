@@ -15,7 +15,7 @@
                     </select>
                 </form>
             <h1>Find measures for your portfolio..</h1>
-            <form method="POST" action='{% url "measure_search_results" %}'>
+            <form method="POST" action='{% url "measure_search_results_investment" %}'>
                 {% csrf_token %}
                 <p>Select measure category:</p>
                 <select name="category" size="6">
@@ -47,7 +47,7 @@
             <br>
             <!-- {{ somevariable|cut:"0" }} to cut tha slash from measure names -->
           
-            <form method="GET" multiple action='{% url "grab_selected_results" %}'>
+            <form method="GET" multiple action='{% url "grab_selected_results_investment" %}'>
                 {% csrf_token %}
                 {% for element in results %}
                 <input type="checkbox" name="measure" value ={{element.name}}/> {{element.name}} <br>

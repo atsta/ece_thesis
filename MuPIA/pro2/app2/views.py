@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from app2.forms import NewMeasureForm
+from app2.forms import NewMeasureForm, MechForm1, MechForm2, MechForm3, MechForm4, LoanForm, FactorForm, ContractForm
 from . import forms
 
 from app2.models import Measure, Social, Energy_Conservation, Costs, Benefits, Portfolio
@@ -45,6 +45,19 @@ def analysis(request):
         return render(request, 'app2/analysis.html', {'form': form})
         
 
+def measure_search_results_investment(request):
+        selected_category = request.POST.get('category')
+        selected_type = request.POST.get('type')
+
+        results = Measure.objects.filter(measure_type=selected_type)
+        #, category=selected_category)
+
+        request.session['category'] = selected_category
+        request.session['type'] = selected_type
+
+        return render(request, 'app2/actor_choice.html', {'results': results, 
+                                                        'selected_category': selected_category, 
+                                                        'selected_type': selected_type})
 def measure_search_results(request):
         selected_category = request.POST.get('category')
         selected_type = request.POST.get('type')
@@ -52,7 +65,38 @@ def measure_search_results(request):
         results = Measure.objects.filter(measure_type=selected_type)
         #, category=selected_category)
         
-        return render(request, 'app2/measure.html', {'results': results})
+        return render(request, 'app2/measure.html', {'results': results, 
+                                                        'selected_category': selected_category, 
+                                                        'selected_type': selected_type})
+
+def grab_selected_results_investment(request):
+        selected = request.GET.getlist('measure')
+        
+        #create an analysis instance for every selected measure
+        #create random names for every analysis instance
+        
+        #remove '\' from measure name
+        for i in range(len(selected)):
+                k = selected[i]
+                k = k[:-1]
+                selected[i] = k
+        #print(selected)
+        #op = Portfolio(name=id_generator(), genre ='social', analysis_pieces=[])
+        #op.save()
+        '''
+        for element in selected:
+                social[element] = id_generator()
+                hip = Measure.objects.get(name=element)
+                hop = Social(name=social[element], measure=hip)
+                op.analysis_pieces.append(social[element])
+                op.save()
+                hop.save()
+                
+        request.session['dictionary'] = social
+        request.session['list'] = selected
+        print(social)
+        '''
+        return render(request, 'app2/investment_analysis.html', {'selected': selected})
 
 def grab_selected_results(request):
         selected = request.GET.getlist('measure')
@@ -103,7 +147,90 @@ def choose_costs_and_benefits(request):
                 hip.save()
         return render(request, 'app2/cba_params_and_results.html', {'costs': costs, 'benefits': benefits})
 
+def choose_costs_and_benefits_investment(request):
+        selected_category = request.session['category']
+        selected_type = request.session['type']
+        
+        print(selected_category)
+        print(selected_type)
 
+        
+        if selected_type == "behavioral":
+                form = MechForm4()             
+        elif selected_category!="household" and selected_category!="public_transport" and selected_category!="private_transport":
+                form = MechForm1()
+        elif selected_category == "household":
+                form = MechForm2()
+        else: 
+                form = MechForm3()
+
+        return render(request, 'app2/investment_analysis_params.html', {'form': form })
+
+def grab_params_and_proceed(request):
+        selected_category = request.session['category']
+        selected_type = request.session['type']
+ 
+        if request.method == "POST":
+                if selected_type == "behavioral":
+                        form = MechForm4(request.POST)
+                elif selected_category!="household" and selected_category!="public_transport" and selected_category!="private_transport":
+                        form = MechForm1(request.POST)
+                elif selected_category == "household":
+                        form = MechForm2(request.POST)
+                else:
+                        form = MechForm3(request.POST)
+
+                if form.is_valid():
+                        print('ok')
+                       
+                        mechanism = form.cleaned_data['chosen_mechanism']
+                        print(mechanism)
+                        request.session['mechanism'] = mechanism
+                        if mechanism == 'loan':
+                                form1 = LoanForm() 
+                                return render(request, 'app2/investment_analysis_params.html', {'form': form, 'form1': form1})
+                        if mechanism == 'increase_factor':
+                                form1 = FactorForm()
+                                return render(request, 'app2/investment_analysis_params.html', {'form': form, 'form1': form1})
+                        if mechanism == 'energy_contract':
+                                form1 = ContractForm()
+                                return render(request, 'app2/investment_analysis_params.html', {'form': form, 'form1': form1})
+                        return render(request, 'app2/investment_analysis_params.html', {'form': form})
+                else: 
+                        print('Error: Invalid form')
+        else:
+                if selected_type == "behavioral":
+                        form = MechForm4()             
+                elif selected_category!="household" and selected_category!="public_transport" and selected_category!="private_transport":
+                        form = MechForm1()
+                elif selected_category == "household":
+                        form = MechForm2()
+                else: 
+                        form = MechForm3()
+
+        return render(request, 'app2/investment_analysis_params.html', {'form': form})
+
+def financial_mechanism_params(request):        
+        mechanism = request.session['mechanism']
+        if mechanism == 'loan':
+                if request.method == "POST":
+                        form1 = LoanForm(request.POST)
+                        if form1.is_valid():
+                                annual = form1.cleaned_data['annual_rate']
+                                print(annual)
+                        return render(request, 'app2/investment_analysis_params.html', {'form1': form1})
+        if mechanism == 'increase_factor':
+                if request.method == "POST":
+                        form1 = FactorForm(request.POST)
+                        return render(request, 'app2/investment_analysis_params.html', {'form1': form1})
+        if mechanism == 'energy_contract':
+                if request.method == "POST":
+                        form1 = ContractForm(request.POST)
+                        return render(request, 'app2/investment_analysis_params.html', {'form1': form1})
+        
+        return render(request, 'app2/investment_analysis_params.html')
+
+                
 def grab_params_and_give_results(request):
         selected = request.session['list']
         social = request.session['dictionary']
@@ -115,7 +242,7 @@ def grab_params_and_give_results(request):
         else:
                 #tbd, for every measure selected
                 analysis_period = 0
-        discount_rate = request.POST.get('discount_rate')/100
+        discount_rate = request.POST.get('discount_rate')
 
         for item in selected:
                 hip = Social.objects.get(name=social[item])

@@ -25,9 +25,14 @@ urlpatterns = [
     url(r'^measure/', views.measure, name='measure'),
     url(r'^analysis/', views.analysis, name='analysis'),
     url(r'^measure_search_results/', views.measure_search_results, name='measure_search_results'),
+    url(r'^measure_search_results_investment/', views.measure_search_results_investment, name='measure_search_results_investment'),
     url(r'^grab_selected_results/', views.grab_selected_results, name='grab_selected_results'),
-    url(r'^choose_costs_and_benefits/', views.choose_costs_and_benefits, name='choose_costs_and_benefits'),  
+    url(r'^grab_selected_results_investment/', views.grab_selected_results_investment, name='grab_selected_results_investment'),
+    url(r'^choose_costs_and_benefits/', views.choose_costs_and_benefits, name='choose_costs_and_benefits'),
+    url(r'^choose_costs_and_benefits_investment/', views.choose_costs_and_benefits_investment, name='choose_costs_and_benefits_investment'),  
+    url(r'^financial_mechanism_params/', views.financial_mechanism_params, name='financial_mechanism_params'),
     url(r'^grab_params_and_give_results/', views.grab_params_and_give_results, name='grab_params_and_give_results'),   
-    url(r'^actor/', views.actor, name='actor_choice'),
+    url(r'^grab_params_and_proceed/$', views.grab_params_and_proceed, name='grab_params_and_proceed'),   
+    url(r'^actor_choice/', views.actor, name='actor_choice'),
  
 ]
