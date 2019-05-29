@@ -85,3 +85,35 @@ SATISFY_CRITERION_CHOICES = [
 class ContractForm(forms.Form):
     chosen_criterion = forms.CharField(label="Choose participation criterion for ESCO", widget=forms.Select(choices=CRITERION_CHOICES))
     criterion_satisfaction = forms.CharField(label="Criterion will be satisfied by:", widget=forms.Select(choices=SATISFY_CRITERION_CHOICES))
+    discount_rate = forms.FloatField()
+    
+class CostStatisfy(forms.Form):
+    contract_period = forms.IntegerField()
+    benefit_share_rate = forms.FloatField()
+
+class PeriodSatisfy(forms.Form):
+    cost_esco_rate = forms.FloatField()
+    benefit_share_rate = forms.FloatField()
+
+class BenefitSatisfy(forms.Form):
+    contract_period = forms.IntegerField()
+    cost_esco_rate = forms.FloatField()
+
+class ProfitInput(forms.Form):
+    profit = forms.FloatField()
+
+class IrrInput(forms.Form):
+    irr = forms.FloatField()
+
+class SInput(forms.Form):
+    spbp = forms.FloatField()
+
+class DInput(forms.Form):
+    dpbp = forms.FloatField()
+
+class EscoLoan(forms.Form):
+    own_funds_rate = forms.FloatField()
+    annual_rate = forms.FloatField()
+    subsidized_interest_rate = forms.FloatField()
+    loan_period = forms.IntegerField(initial=0, required=False)
+    grace_period = forms.IntegerField(initial=0)

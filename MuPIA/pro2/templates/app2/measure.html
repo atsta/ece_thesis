@@ -1,52 +1,167 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <style>
+        body {
+            margin:0;
+            font-family: sans-serif;
+            text-align: center;
+            background-color: rgb(238, 221, 200);
+            }
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: rgb(94, 92, 92);
+            position: fixed;
+            top: 0;
+            width: 100%;
+        }
+
+        li {
+            float: left;
+        }
+
+        li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        li a:hover:not(.active) {
+            background-color: rgb(109, 108, 108);
+        }
+
+        .active {
+            background-color: rgb(167, 114, 92);
+        }    
+
+        .box{
+            box-shadow: 1px 1px 8px rgba(63, 62, 62, 0.35);
+                border-radius: 8px;
+                border: 2px solid rgb(167, 114, 92);
+                width: auto;
+                padding-left: 80px;
+                padding-right: 80px;
+                padding-top: 15px;
+                padding-bottom: 15px;
+                margin-top: 20px;
+                margin-bottom: 20px;
+                display: inline-block;
+        }
+        .heading {
+                font-weight: bold;
+                border-bottom: 2px solid rgb(187, 186, 186);
+                display: inline-block;
+                padding-bottom: 10px;
+                margin-top: 20px;
+                margin-bottom: 10px;
+                font-size: 28px;
+            }
+        .form-inline { 
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+        }
+
+        .form-inline p {
+            margin: 0px 10px 0px 20px;
+            font-size: 18px;
+        }
+        
+
+        .form-inline select {
+            vertical-align: middle;
+            margin: 5px 8px 5px 0;
+            padding: 5px;
+            background-color: #fff;
+            border: 1px solid rgb(48, 47, 47);
+            background-color: rgb(238, 221, 200);
+            border-radius: 5px;
+            font-size: 15px;
+            
+        }
+
+        .form-inline input {
+            padding: 0;
+            background-color: rgb(109, 108, 108);
+            border: 1px solid #ddd;
+            color: white;
+            margin: 0px 10px 0px 20px;
+            height: 35px;
+            width: 80px;
+            border-radius: 5px;
+            font-size: 15px;
+            
+        }
+        h1 {
+            text-align: center;
+        }
+        </style>
         <meta charset="utf-8">
         <title>Measure</title>
     </head>
-    <body>
-        <div class="container">
-            <h1>Find measures for your portfolio..</h1>
-            <form method="POST" action='{% url "measure_search_results" %}'>
+    <body>    
+        <ul>
+            <li><a  href="/">Home</a></li>
+            <li><a class="active" href="/measure">Search Measure</a></li>
+            <li><a href="/analysis">Add New Measure</a></li>
+        </ul>
+        <br>
+        <br>
+        <br>
+        <br>
+        <div class="heading">
+            Find measures for your portfolio
+        </div>
+        <div class="box">
+            <form class="form-inline" method="POST" action='{% url "measure_search_results" %}'>
                 {% csrf_token %}
-                <p>Select measure category:</p>
-                <select name="category" size="6">
-                    <option value="household" selected>Household-Houses</option>
+                
+                
+                <p>Calculate energy conservation based on:</p>
+                <select name="article" >
+                    <option value="art3" >Article 3</option>
+                    <option value="art7">Article 7</option>
+                </select>
+                <p>Category:</p>
+                <select name="category" id="select2">
+                    <option value="household" >Household-Houses</option>
                     <option value="business">Business Buildings</option>
                     <option value="industry">Industry</option>
                     <option value="private_transport">Private Transport</option>
                     <option value="public_transport">Public Transport</option>
                     <option value="public_buildings">Public Buildings</option>
                 </select>
-                <p>Select measure type:</p>
-                <select name="type" size="2">
-                    <option value="technical" selected>Technical</option>
+                <p>Type:</p>
+                <select name="type">
+                    <option value="technical" >Technical</option>
                     <option value="behavioral">Behavioral</option>
                 </select>
-                <input type="submit" class="btn" value="OK">
+                <br>
+                <br>
+                <input type="submit" class="btn" value="Search">
             </form>
-            <form method="GET">
-                {% csrf_token %}
-                <p>Calculate energy conservation based on:</p>
-                <select name="type" size="2">
-                        <option value="art3" selected>Article 3</option>
-                        <option value="art7">Article 7</option>
-                </select>
-            </form>
+            </div>
+           
             <br>
             
             <br>
-            <br>
             <!-- {{ somevariable|cut:"0" }} to cut tha slash from measure names -->
-            <a class="link" href="/analysis">Add new measure</a>
+            
             <form method="GET" multiple action='{% url "grab_selected_results" %}'>
                 {% csrf_token %}
                 {% for element in results %}
                 <input type="checkbox" name="measure" value ={{element.name}}/> {{element.name}} <br>
                 {% endfor %}
-                <input type="submit" class="btn" value="OK">
+                <br>
+                {% if results %}
+                    <input type="submit" class="btn" value="OK">
+                {% endif %}
             </form>
 
-        </div>
     </body>
 </html>

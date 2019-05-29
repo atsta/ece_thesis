@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from app2.forms import NewMeasureForm, MechForm1, MechForm2, MechForm3, MechForm4, LoanForm, FactorForm, ContractForm
+from app2.forms import NewMeasureForm, MechForm1, MechForm2, MechForm3, MechForm4, LoanForm, FactorForm, ContractForm, ProfitInput, IrrInput, SInput, DInput, BenefitSatisfy, CostStatisfy, PeriodSatisfy, EscoLoan
 from . import forms
 
 from app2.models import Measure, Social, Energy_Conservation, Costs, Benefits, Portfolio
@@ -38,7 +38,7 @@ def analysis(request):
                         c.save()
                         b = Benefits(measure=measure)
                         b.save()
-                        #return analysis(request)
+                        return render(request, 'app2/measure.html', {})
                 else: 
                         print('Error: Invalid form')
                         
@@ -194,7 +194,9 @@ def grab_params_and_proceed(request):
                                 return render(request, 'app2/investment_analysis_params.html', {'form': form, 'form1': form1})
                         if mechanism == 'energy_contract':
                                 form1 = ContractForm()
-                                return render(request, 'app2/investment_analysis_params.html', {'form': form, 'form1': form1})
+                                
+                                return render(request, 'app2/esco.html', {'form1': form1})
+                        
                         return render(request, 'app2/investment_analysis_params.html', {'form': form})
                 else: 
                         print('Error: Invalid form')
@@ -218,19 +220,88 @@ def financial_mechanism_params(request):
                         if form1.is_valid():
                                 annual = form1.cleaned_data['annual_rate']
                                 print(annual)
-                        return render(request, 'app2/investment_analysis_params.html', {'form1': form1})
+                        return render(request, 'app2/investment_analysis_results.html')
         if mechanism == 'increase_factor':
                 if request.method == "POST":
                         form1 = FactorForm(request.POST)
-                        return render(request, 'app2/investment_analysis_params.html', {'form1': form1})
-        if mechanism == 'energy_contract':
-                if request.method == "POST":
-                        form1 = ContractForm(request.POST)
-                        return render(request, 'app2/investment_analysis_params.html', {'form1': form1})
+                        return render(request, 'app2/investment_analysis_results.html')
         
-        return render(request, 'app2/investment_analysis_params.html')
+        return render(request, 'app2/investment_analysis_results.html')
 
-                
+def esco_params(request):
+        if request.method == "POST":
+                form1 = ContractForm(request.POST)
+                esco_loan = request.POST.get('took_loan')
+                print(esco_loan)
+                if form1.is_valid():
+                        criterion = form1.cleaned_data['chosen_criterion']
+                        print(criterion)
+                        if criterion == 'profit':
+                                form2 = ProfitInput() 
+                        if criterion == 'irr':
+                                form2 = IrrInput()
+                        if criterion == 'spbp':
+                                form2 = SInput()
+                        if criterion == 'dpbp':
+                                form2 = DInput()
+
+                        criterion_satisfaction = form1.cleaned_data['criterion_satisfaction']
+                        print(criterion_satisfaction)
+                        
+                        #form3 = BenefitSatisfy()
+
+                        if criterion_satisfaction == 'contract_period':
+                                form3 = PeriodSatisfy() 
+                        if criterion_satisfaction == 'benefit_share':
+                                form3 = BenefitSatisfy()
+                        if criterion_satisfaction == 'cost_esco':
+                                form3 = CostStatisfy()
+                        
+                        if esco_loan == 'esco_loan':
+                                form4 = EscoLoan()
+                                return render(request, 'app2/esco.html', {'form1': form1, 'form2':form2, 'form3': form3, 'form4': form4})
+
+                        return render(request, 'app2/esco.html', {'form1': form1, 'form2':form2, 'form3': form3})
+
+                        if request.method == "POST":
+                                if criterion == 'profit':
+                                        form2 = ProfitInput(request.POST) 
+                                if criterion == 'irr':
+                                        form2 = IrrInput(request.POST)
+                                if criterion == 'spbp':
+                                        form2 = SInput(request.POST)
+                                if criterion == 'dpbp':
+                                        form2 = DInput(request.POST)
+
+                                if criterion_satisfaction == 'contract_period':
+                                        form3 = PeriodSatisfy(request.POST) 
+                                if criterion_satisfaction == 'benefit_share':
+                                        form3 = BenefitSatisfy(request.POST)
+                                if criterion_satisfaction == 'cost_esco':
+                                        form3 = CostStatisfy(request.POST)
+                                
+                                if esco_loan == 'esco_loan':
+                                        form4 = EscoLoan(request.POST)
+                                        return render(request, 'app2/esco.html', {'form1': form1, 'form2':form2, 'form3': form3, 'form4': form4})                                
+           
+                                return render(request, 'app2/esco.html', {'form1': form1, 'form2':form2, 'form3': form3})                                
+        
+        return render(request, 'app2/investment_analysis_results.html')
+        
+def investment_analysis_results(request):
+        chose_lifetime = request.POST.getlist('lifetime')
+        if chose_lifetime == []:
+                analysis_period = request.POST.get('analysis_period')
+        else:
+                #tbd, for every measure selected
+                analysis_period = 0
+        discount_rate = request.POST.get('discount_rate')
+        print(analysis_period)
+        print(discount_rate)
+
+        return render(request, 'app2/investment_analysis_results.html')
+
+
 def grab_params_and_give_results(request):
         selected = request.session['list']
         social = request.session['dictionary']

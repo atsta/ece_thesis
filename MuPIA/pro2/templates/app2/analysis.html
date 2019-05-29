@@ -1,16 +1,169 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <style>
+            body {
+                margin:0;
+                text-align: center;
+                font-family: sans-serif;
+                background-color: rgb(238, 221, 200);
+            }
+            ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background-color: rgb(94, 92, 92);
+                position: fixed;
+                top: 0;
+                width: 100%;
+            }
+            li {
+                float: left;
+            }
+            li a {
+                display: block;
+                color: white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+            li a:hover {
+                background-color: rgb(109, 108, 108);
+            }
+            li a:focus {
+                background-color: rgb(109, 108, 108);
+            }
+            li a:link{
+                background-color: rgb(109, 108, 108);
+            }
+            li a:hover:not(.active) {
+                background-color: rgb(109, 108, 108);
+            }
+
+            .active {
+                background-color: rgb(167, 114, 92);
+            }    
+            .box{
+                box-shadow: 1px 1px 8px rgba(63, 62, 62, 0.35);
+                border-radius: 8px;
+                border: 2px solid rgb(167, 114, 92);
+                width: auto;
+                padding-left: 100px;
+                padding-right: 100px;
+                margin-top: 30px;
+                margin-bottom: 20px;
+                display: inline-block;
+            }
+            form {
+                display: inline-block;
+            }
+            form .heading {
+                font-weight: bold;
+                border-bottom: 2px solid rgb(187, 186, 186);
+                margin-top: 20px;
+                margin-bottom: 8px;
+                font-size: 28px;
+                display: inline-block;
+                padding-bottom: 10px;
+            }
+            form .lab {
+                text-align: left;
+                margin: 10px 0px 5px 0px;
+                font-size: 18px;
+            }
+            form input{
+                box-sizing: border-box;
+	            -webkit-box-sizing: border-box;
+	            -moz-box-sizing: border-box;
+	            border: 1px solid #C2C2C2;
+                box-shadow: 1px 1px 4px #EBEBEB;
+                -moz-box-shadow: 1px 1px 4px #EBEBEB;
+                -webkit-box-shadow: 1px 1px 4px #EBEBEB;
+                border-radius: 5px;
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                padding: 5px;
+                outline: none;
+                text-align: left;
+                width: 300px;
+                height: 30px;
+                margin: 0px;
+            }
+            form textarea {
+                box-sizing: border-box;
+	            -webkit-box-sizing: border-box;
+	            -moz-box-sizing: border-box;
+	            border: 1px solid #C2C2C2;
+                box-shadow: 1px 1px 4px #EBEBEB;
+                -moz-box-shadow: 1px 1px 4px #EBEBEB;
+                -webkit-box-shadow: 1px 1px 4px #EBEBEB;
+                border-radius: 5px;
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                padding: 7px;
+                outline: none;
+                text-align: left;
+                margin: 0px;
+                width: 300px;
+                height: 50px;     
+            }
+            form input[type=submit],
+            form input[type=button]{
+                text-align: center;
+                border: none;
+                padding: 8px 15px 8px 15px;
+                background: rgb(172, 96, 61);
+                color: #fff;
+                box-shadow: 1px 1px 4px #DADADA;
+                -moz-box-shadow: 1px 1px 4px #DADADA;
+                -webkit-box-shadow: 1px 1px 4px #DADADA;
+                border-radius: 5px;
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                width: 80px;
+                float: right;
+                margin-bottom: 20px;
+            }
+            form input[type=submit]:hover,
+            form input[type=button]:hover{
+                background: rgb(168, 103, 74);
+                color: #fff;
+            }
+        </style>
         <meta charset="utf-8">
-        <title>Analysis</title>
+        <title>New Measure</title>
     </head>
     <body>
-        <h1>Select measure and analysis type:</h1>
-        <div class="container">
-            <form method="POST">
-                {{form.as_p}}
+        <ul>
+            <li><a  href="/">Home</a></li>
+            <li><a href="/measure">Search Measure</a></li>
+            <li><a class="active" href="/analysis">Add New Measure</a></li>
+        </ul>
+        <br>
+        <br>
+        <div class="box">
+            <form method="POST" novalidate>
                 {% csrf_token %}
-                <input type="submit" class="btn" value="OK">
+                <div class="heading">Add New Measure</div>
+                {% for field in form.visible_fields %}
+                    <div class="lab">
+                    <label for={{field.name}}>
+                        {{ field.label_tag }}
+                    </label>
+                    </div>
+                    <div class="input">
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <br>
+                <input type="submit" class="btn" value="Submit">
             </form>
         </div>
+    </body>
 </html>

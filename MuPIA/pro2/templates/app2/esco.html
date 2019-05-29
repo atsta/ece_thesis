@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Measure</title>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Define ESCO participation parameters:</h1>
+            <form action='/esco_params/' method="POST">
+                {% csrf_token %}
+                {{form1.as_p}}
+                <input type="checkbox" name="took_loan" value="esco_loan"/> Take Loan<br>
+                <br>
+                <input type="submit" class="btn" value="OK">
+            </form>
+            <br>
+            <form action='/esco_params/' method="POST">
+                <h3>Give Criterion Values:</h3>
+                {% csrf_token %}
+                {{form2.as_p}}
+                {{form3.as_p}}
+                <h3>Esco Loan Conditions:</h3>
+                {{form4.as_p}}
+                <input type="submit" class="btn" value="OK">
+            </form>
+
+        </div>
+    </body>
+</html>

@@ -34,5 +34,7 @@ urlpatterns = [
     url(r'^grab_params_and_give_results/', views.grab_params_and_give_results, name='grab_params_and_give_results'),   
     url(r'^grab_params_and_proceed/$', views.grab_params_and_proceed, name='grab_params_and_proceed'),   
     url(r'^actor_choice/', views.actor, name='actor_choice'),
+    url(r'^esco_params/', views.esco_params, name='esco_params'),
+    url(r'^investment_analysis_results/', views.investment_analysis_results, name='investment_analysis_results')
  
 ]
