@@ -2,36 +2,168 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Analysis</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>Benefits and Costs</title>
+        <style>
+            body {
+                margin:0;
+                font-family: sans-serif;
+                text-align: center;
+                background-color: rgb(238, 221, 200);
+                color: #4a4a4d;
+            }
+            ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background-color: rgb(94, 92, 92);
+                position: fixed;
+                top: 0;
+                width: 100%;
+            }
+
+        li {
+            float: left;
+        }
+
+        li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        li a:hover:not(.active) {
+            background-color: rgb(109, 108, 108);
+        }
+
+        .active {
+            background-color: rgb(167, 114, 92);
+        }    
+        .heading {
+            font-weight: bold;
+            border-bottom: 2px solid rgb(187, 186, 186);
+            display: inline-block;
+            padding-bottom: 10px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            color: #4a4a4d;
+            display: inline-block;
+            table-layout: auto;
+        }
+        th{
+            padding: 10px 15px;
+            vertical-align: middle;
+        }
+        th:first-child {
+            border-top-left-radius: 8px;
+            text-align: left;
+        }
+        th:last-child {
+            border-top-right-radius: 8px;
+        }
+        thead tr td:first-child{
+            padding: 10px 35px;
+        }
+        thead {
+            background-color: rgb(167, 114, 92);
+            background: linear-gradient(rgb(190, 132, 110), rgb(167, 114, 92));
+            color: #fff;
+            font-size: 16px;
+        }
+        td {
+            padding: 10px 30px 10px 20px;
+            vertical-align: middle;
+            border-bottom: 1px solid rgb(187, 186, 186);
+            border-right: 1px solid rgb(187, 186, 186);
+            border-left: 1px solid rgb(187, 186, 186);
+            text-align: left;
+        }
+        .costs{
+            vertical-align: top;
+        }
+        tbody tr:last-child td:first-child{
+            border-bottom-left-radius: 8px;
+        }
+        tbody tr:last-child td:last-child{
+            border-bottom-right-radius: 8px;
+        }
+        .ok-btn input{
+            background-color: rgb(109, 108, 108);
+            border: 1px solid #ddd;
+            color: white;
+            margin: 0px 10px 0px 10px;
+            height: 30px;
+            width: 50px;
+            border-radius: 5px;
+            font-size: 15px;   
+        }
+        </style>
+        
     </head>
     <body>
-        <h1>Select cost and benefit categories</h1>
-        <div class="container">
-            <form method="POST" action='{% url "choose_costs_and_benefits" %}'>
-                {% csrf_token %}
-                {% for element in selected %}
-
-                <p>Select benefits for measure {{element}}</p>
-                <!-- measure name0 as name in benefits input -->
-                {% with element|add:"0" as benefit %}
-                <input type="checkbox" name={{benefit}} value ='energy_savings'/>Energy Savings<br>
-                <input type="checkbox" name={{benefit}} value ='maintenance'/>Maintenance<br>
-                <input type="checkbox" name={{benefit}} value ='externalities'/>Externalities<br>
-                <input type="checkbox" name={{benefit}} value ='value_growth'/>Value Growth<br>
-                <input type="checkbox" name={{benefit}} value ='work_efficiency'/>Work Efficiency<br>
-                <input type="checkbox" name={{benefit}} value ='employability'/>Employability<br>
-                {% endwith %}
-
-                <p>Select costs for measure {{element}}</p>
-                <!-- measure name1 as name in costs input -->
-                {% with element|add:"1" as cost %}
-                <input type="checkbox" name={{cost}} value ='equipment'/>Equipment<br>
-                <input type="checkbox" name={{cost}} value ='management'/>Management Cost<br>
-                <input type="checkbox" name={{cost}} value ='reduced_income'/>Reduced Income<br>
-                {% endwith %}
-
-                {% endfor %}
-                <input type="submit" class="btn" value="OK">
-            </form>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/measure">Search Measure</a></li>
+        </ul>
+        <br>
+        <br>
+        <br>
+        <div class="heading">
+            Select Benefit and Cost Categories 
+            <!--<p>for each selected measure</p>-->
         </div>
+        <br>
+        <br>
+        <form method="POST" action='{% url "choose_costs_and_benefits" %}'>
+            {% csrf_token %}
+            {% for element in selected %}
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col"colspan="2">{{element}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <td>
+                        <strong>Benefits</strong>
+                        <hr>
+                        <!-- measure name0 as name in benefits input -->
+                        {% with element|add:"0" as benefit %}
+                        <input type="checkbox" name={{benefit}} value ='energy_savings'/>Energy Savings<br>
+                        <input type="checkbox" name={{benefit}} value ='maintenance'/>Maintenance<br>
+                        <input type="checkbox" name={{benefit}} value ='externalities'/>Externalities<br>
+                        <input type="checkbox" name={{benefit}} value ='value_growth'/>Value Growth<br>
+                        <input type="checkbox" name={{benefit}} value ='work_efficiency'/>Work Efficiency<br>
+                        <input type="checkbox" name={{benefit}} value ='employability'/>Employability<br>
+                        {% endwith %}
+                    </td>
+                    <td class="costs">
+                        <strong>Costs</strong>
+                        <hr>
+                        <!-- measure name1 as name in costs input -->
+                        {% with element|add:"1" as cost %}
+                        <input type="checkbox" name={{cost}} value ='equipment'/>Equipment<br>
+                        <input type="checkbox" name={{cost}} value ='management'/>Management Cost<br>
+                        <input type="checkbox" name={{cost}} value ='reduced_income'/>Reduced Income<br>
+                        {% endwith %}
+                    </td>
+                </tbody>
+            </table>
+            <br>
+            <div style="clear:both;"></div>
+            <br>
+            {% endfor %}
+            <div class="ok-btn">
+            <input type="submit" class="btn" value="OK">
+            </div>
+        </form>
+        </body>
 </html>

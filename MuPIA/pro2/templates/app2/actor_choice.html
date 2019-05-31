@@ -2,7 +2,109 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Measure</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>Search Measure</title>
+        <style>
+            body {
+                margin:0;
+                font-family: sans-serif;
+                text-align: center;
+                background-color: rgb(238, 221, 200);
+                color: #4a4a4d;
+            }
+            ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background-color: rgb(94, 92, 92);
+                position: fixed;
+                top: 0;
+                width: 100%;
+            }
+
+            li {
+                float: left;
+            }
+
+            li a {
+                display: block;
+                color: white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+
+            li a:hover:not(.active) {
+                background-color: rgb(109, 108, 108);
+            }
+
+            .active {
+                background-color: rgb(167, 114, 92);
+            }    
+
+            .box{
+                box-shadow: 1px 1px 8px rgba(63, 62, 62, 0.35);
+                border-radius: 8px;
+                border: 1px solid rgb(167, 114, 92);
+                width: auto;
+                padding-left: 80px;
+                padding-right: 80px;
+                padding-top: 15px;
+                padding-bottom: 15px;
+                margin-top: 20px;
+                margin-bottom: 20px;
+                display: inline-block;
+            }
+            .heading {
+                font-weight: bold;
+                border-bottom: 2px solid rgb(187, 186, 186);
+                display: inline-block;
+                padding-bottom: 10px;
+                margin-top: 20px;
+                margin-bottom: 10px;
+                font-size: 28px;
+                }
+            .form-inline { 
+                display: flex;
+                flex-flow: row wrap;
+                align-items: center;
+            }
+
+            .form-inline p {
+                margin: 0px 10px 0px 20px;
+                font-size: 18px;
+            }
+            
+            .form-inline select {
+                vertical-align: middle;
+                margin: 5px 8px 5px 0;
+                padding: 5px;
+                background-color: #fff;
+                border: 1px solid rgb(94, 92, 92);;
+                background-color: rgb(238, 221, 200);
+                border-radius: 5px;
+                font-size: 15px;
+                color: #4a4a4d;
+                
+            }
+
+            .form-inline input {
+                padding: 0;
+                background-color: rgb(109, 108, 108);
+                border: 1px solid #ddd;
+                color: white;
+                margin: 0px 10px 0px 20px;
+                height: 35px;
+                width: 80px;
+                border-radius: 5px;
+                font-size: 15px;
+                
+            }
+            h1 {
+                text-align: center;
+            }
+        </style>
     </head>
     <body>
         <div class="container">
