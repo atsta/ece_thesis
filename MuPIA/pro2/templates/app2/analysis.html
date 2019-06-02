@@ -140,7 +140,8 @@
     <body>
         <ul>
             <li><a  href="/">Home</a></li>
-            <li><a href="/measure">Search Measure</a></li>
+            <li><a href="/measure">Cost-Benefit Analysis</a></li>
+            <li><a href="/actor_choice">Investment Analysis</a></li>
             <li><a class="active" href="/analysis">Add New Measure</a></li>
         </ul>
         <br>
@@ -151,9 +152,9 @@
                 <div class="heading">Add New Measure</div>
                 {% for field in form.visible_fields %}
                     <div class="lab">
-                    <label for={{field.name}}>
-                        {{ field.label_tag }}
-                    </label>
+                        <label for={{field.name}}>
+                            {{ field.label_tag }}
+                        </label>
                     </div>
                     <div class="input">
                         {{ field }}

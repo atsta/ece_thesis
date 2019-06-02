@@ -2,22 +2,191 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Measure</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>Financial Mechanism</title>
+        <style>
+            body {
+                margin:0;
+                font-family: sans-serif;
+                text-align: center;
+                background-color: rgb(238, 221, 200);
+                color: #4a4a4d;
+            }
+            ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background-color: rgb(94, 92, 92);
+                position: fixed;
+                top: 0;
+                width: 100%;
+            }
+
+            li {
+                float: left;
+            }
+
+            li a {
+                display: block;
+                color: white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+
+            li a:hover:not(.active) {
+                background-color: rgb(109, 108, 108);
+            }
+
+            .active {
+                background-color: rgb(167, 114, 92);
+            }    
+            .heading {
+                font-weight: bold;
+                border-bottom: 2px solid rgb(187, 186, 186);
+                display: inline-block;
+                padding-bottom: 10px;
+                margin-top: 20px;
+                margin-bottom: 0px;
+                font-size: 28px;
+            }
+            .box{
+                border-radius: 8px;
+                width: auto;
+                padding-left: 30px;
+                padding-right: 30px;
+                padding-top: 0px;
+                padding-bottom: 15px;
+                margin-top: 20px;
+                margin-bottom: 20px;
+                display: inline-block;
+            }
+            .form-inline { 
+                display: flex;
+
+                align-items: center;
+            }
+            .fin{
+                text-align: center;
+            }
+            .form-inline select {
+                vertical-align: middle;
+                margin: 5px 8px 5px 0;
+                padding: 5px;
+                background-color: #fff;
+                border: 1px solid rgb(94, 92, 92);;
+                background-color: rgb(238, 221, 200);
+                border-radius: 5px;
+                font-size: 15px;
+                color: #4a4a4d;
+                width: auto;
+            }
+            .form-inline .btn {
+                padding: 0;
+                background-color: rgb(109, 108, 108);
+                border: 1px solid #ddd;
+                color: white;
+                height: 32px;
+                width: 60px;
+                border-radius: 5px;
+                font-size: 12px;
+                text-align: center;   
+            }
+            form .btn {
+                padding: 0;
+                background-color: rgb(109, 108, 108);
+                border: 1px solid #ddd;
+                color: white;
+                height: 32px;
+                width: 60px;
+                border-radius: 5px;
+                font-size: 12px;
+                text-align: center;   
+            }
+            form {
+                display: inline-block;
+                text-align: left;
+            }
+            form .heading {
+                font-weight: bold;
+                border-bottom: 2px solid rgb(187, 186, 186);
+                margin-top: 20px;
+                margin-bottom: 8px;
+                font-size: 22px;
+                display: inline-block;
+                padding-bottom: 10px;
+            }
+            form .lab {
+                text-align: left;
+                margin: 10px 0px 5px 0px;
+                font-size: 15px;
+            }
+            form input{
+                box-sizing: border-box;
+	            -webkit-box-sizing: border-box;
+	            -moz-box-sizing: border-box;
+	            border: 1px solid #C2C2C2;
+                box-shadow: 1px 1px 4px #EBEBEB;
+                -moz-box-shadow: 1px 1px 4px #EBEBEB;
+                -webkit-box-shadow: 1px 1px 4px #EBEBEB;
+                border-radius: 5px;
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                padding: 10px;
+                outline: none;
+                text-align: left;
+                width: 180px;
+                height: 30px;
+                margin: 0px;
+            }
+            
+        </style>
     </head>
     <body>
-        <div class="container">
-            <h1>Choose financial mechanism:</h1>
-            <form action='/grab_params_and_proceed/' method="POST">
-                {% csrf_token %}
-                {{form.as_p}}
-                <input type="submit" class="btn" value="OK">
-            </form>
-            <br>
-            <form method="POST" action='/financial_mechanism_params/'>
-                {% csrf_token %}
-                {{form1.as_p}}
-                <input type="submit" class="btn" value="OK">
-            </form>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/actor_choice">Search Measure</a></li>
+        </ul>
+        <br>
+        <br>
+        <br>
+        <div class="heading">
+            Choose financial mechanism            
         </div>
+        <br>
+        <div class="box">
+
+        <form class="form-inline" action='/grab_params_and_proceed/' method="POST">
+            {% csrf_token %}
+            {{form.as_p}}
+            <input type="submit" class="btn" value="OK">
+        </form>
+        <form method="POST" action='/financial_mechanism_params/'>
+            {% csrf_token %}
+            {% if form1.visible_fields %}
+            <div class="heading">Insert Parameters</div>
+            {% endif %}
+            {% for field in form1.visible_fields %}
+            <div class="lab">
+                <label for={{field.name}}>
+                    {{ field.label_tag }}
+                </label>
+            </div>
+            <div class="input">
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <br>
+            {% if form1.visible_fields %}
+            <div class="fin">
+                <input type="submit" class="btn" value="Submit">
+            </div>
+            {% endif %}
+        </form>
+    </div>
     </body>
 </html>

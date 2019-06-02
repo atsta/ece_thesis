@@ -48,8 +48,8 @@
                 border-radius: 8px;
                 border: 1px solid rgb(167, 114, 92);
                 width: auto;
-                padding-left: 80px;
-                padding-right: 80px;
+                padding-left: 50px;
+                padding-right: 50px;
                 padding-top: 15px;
                 padding-bottom: 15px;
                 margin-top: 20px;
@@ -72,8 +72,8 @@
             }
 
             .form-inline p {
-                margin: 0px 10px 0px 20px;
-                font-size: 18px;
+                margin: 0px 5px 0px 10px;
+                font-size: 16px;
             }
             
             .form-inline select {
@@ -104,23 +104,100 @@
             h1 {
                 text-align: center;
             }
+            table {
+                border-collapse: separate;
+                border-spacing: 0;
+                color: #4a4a4d;
+                display: inline-block;
+                table-layout: auto;
+            }
+            th{
+                padding: 10px 15px;
+                vertical-align: middle;
+            }
+            th:first-child {
+                border-top-left-radius: 8px;
+                text-align: center;
+            }
+            th:last-child {
+                border-top-right-radius: 8px;
+            }
+            thead tr td:first-child{
+                padding: 10px 35px;
+            }
+            thead {
+                background-color: rgb(167, 114, 92);
+                background: linear-gradient(rgb(190, 132, 110), rgb(167, 114, 92));
+                color: #fff;
+                font-size: 16px;
+            }
+            .check-measure{
+                padding: 10px 10px;
+            }
+            td {
+                padding: 10px 35px;
+                vertical-align: middle;
+                border-bottom: 1px solid rgb(187, 186, 186);
+                border-right: 1px solid rgb(187, 186, 186);
+                border-left: 1px solid rgb(187, 186, 186);
+                text-align: center;
+            }
+            tbody tr:last-child td:first-child{
+                border-bottom-left-radius: 8px;
+            }
+            tbody tr:last-child td:last-child{
+                border-bottom-right-radius: 8px;
+            }
+            .measure-name {
+                padding: 10px 45px;
+                text-align: left;
+            }
+
+            tfoot tr:last-child td:last-child {
+                border-bottom-color: transparent;
+                border-left-color: transparent;
+                border-right-color: transparent;
+                border-top-color: transparent;
+            } 
+            .ok-btn input{
+                background-color: rgb(109, 108, 108);
+                border: 1px solid #ddd;
+                color: white;
+                margin: 0px 10px 0px 10px;
+                height: 30px;
+                width: 50px;
+                border-radius: 5px;
+                font-size: 15px;   
+            }
         </style>
     </head>
     <body>
-        <div class="container">
-            <h1>Select Decision Maker</h1>
-                <form method="POST">
-                    {% csrf_token %}
-                    <select name="actor">
-                        <option value="country" selected>Country</option>
-                        <option value="eeos">EEOS</option>
-                    </select>
-                </form>
-            <h1>Find measures for your portfolio..</h1>
-            <form method="POST" action='{% url "measure_search_results_investment" %}'>
+        <ul>
+            <li><a  href="/">Home</a></li>
+            <li><a class="active" href="/actor_choice">Search Measure</a></li>
+            <li><a href="/analysis">Add New Measure</a></li>
+        </ul>
+        <br>
+        <br>
+        <br>
+        <div class="heading">
+            Find measures for your portfolio
+        </div>
+        <div class="box">
+            <form class="form-inline" method="POST" action='{% url "measure_search_results_investment" %}'>
                 {% csrf_token %}
-                <p>Select measure category:</p>
-                <select name="category" size="6">
+                <p>Decision Maker:</p>
+                <select name="actor">
+                    <option value="country" selected>Country</option>
+                    <option value="eeos">EEOS</option>
+                </select>
+                <p>Calculate energy conservation based on:</p>
+                <select name="type">
+                        <option value="art3" selected>Article 3</option>
+                        <option value="art7">Article 7</option>
+                </select>
+                <p>Category:</p>
+                <select name="category">
                     <option value="household" selected>Household-Houses</option>
                     <option value="business">Business Buildings</option>
                     <option value="industry">Industry</option>
@@ -128,35 +205,55 @@
                     <option value="public_transport">Public Transport</option>
                     <option value="public_buildings">Public Buildings</option>
                 </select>
-                <p>Select measure type:</p>
-                <select name="type" size="2">
+                <p>Type:</p>
+                <select name="type">
                     <option value="technical" selected>Technical</option>
                     <option value="behavioral">Behavioral</option>
                 </select>
-                <input type="submit" class="btn" value="OK">
+                <br>
+                <br>
+                <input type="submit" class="btn" value="Search">
             </form>
-            <form method="GET">
-                {% csrf_token %}
-                <p>Calculate energy conservation based on:</p>
-                <select name="type" size="2">
-                        <option value="art3" selected>Article 3</option>
-                        <option value="art7">Article 7</option>
-                </select>
-            </form>
-            <br>
-            
-            <br>
-            <br>
-            <!-- {{ somevariable|cut:"0" }} to cut tha slash from measure names -->
-          
-            <form method="GET" multiple action='{% url "grab_selected_results_investment" %}'>
-                {% csrf_token %}
-                {% for element in results %}
-                <input type="checkbox" name="measure" value ={{element.name}}/> {{element.name}} <br>
-                {% endfor %}
-                <input type="submit" class="btn" value="OK">
-            </form>
-
         </div>
+        <br>
+        <table>
+            {% if results %}
+            <thead>
+                <tr>
+                <th scope="col" colspan="2">Name</th>
+                <th scope="col">Lifetime</th>
+                <th scope="col">Cost</th>
+                </tr>
+            </thead>
+            {% endif %}
+        <tbody>
+        <!-- {{ somevariable|cut:"0" }} to cut tha slash from measure names -->
+        
+        <form method="GET" multiple action='{% url "grab_selected_results_investment" %}'>
+            {% csrf_token %}
+            {% for element in results %}
+            <tr>
+                <td class="check-measure">
+                    <input type="checkbox" name="measure" value ={{element.name}}/>
+                </td>
+                <td class="measure-name">{{element.name}}</td>
+                <td class="measure-lifetime">{{element.lifetime}}</td>
+                <td class="measure-cost">{{element.cost}} €</td>
+            </tr>
+            {% endfor %}
+            <br>
+        </tbody>
+        <tfoot>
+            <tr class="ok-btn">
+                <td colspan="4">
+                    {% if results %}
+                    <input type="submit" class="btn" value="OK">
+                    {% endif %}
+                </td>
+            </tr>
+            
+        </tfoot>
+        </form>
+            
     </body>
 </html>

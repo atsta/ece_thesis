@@ -2,29 +2,263 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Measure</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>ESCO</title>
+        <style>
+            body {
+                margin:0;
+                font-family: sans-serif;
+                text-align: center;
+                background-color: rgb(238, 221, 200);
+                color: #4a4a4d;
+            }
+            ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background-color: rgb(94, 92, 92);
+                position: fixed;
+                top: 0;
+                width: 100%;
+            }
+
+            li {
+                float: left;
+            }
+
+            li a {
+                display: block;
+                color: white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+
+            li a:hover:not(.active) {
+                background-color: rgb(109, 108, 108);
+            }
+            .active {
+                background-color: rgb(167, 114, 92);
+                }   
+            .heading {
+            font-weight: bold;
+            border-bottom: 2px solid rgb(187, 186, 186);
+            display: inline-block;
+            padding-bottom: 10px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 25px;
+            } 
+            .heading1 {
+            font-weight: bold;
+            border-bottom: 2px solid rgb(187, 186, 186);
+            display: inline-block;
+            padding-bottom: 10px;
+            margin-top: 0px;
+            margin-bottom: 10px;
+            font-size: 18px;
+            } 
+
+            .inline { 
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+            }
+            .inline .lab {
+                margin: 10px 5px 5px 5px;
+                font-size: 16px;
+            }
+            .inline .lab1 {
+                margin: 10px 5px 5px 15px;
+                font-size: 16px;
+            }
+            form {
+                padding-top: 15px;
+            }
+            form select {
+                vertical-align: middle;
+                margin: 5px 8px 5px 0;
+                padding: 5px;
+                background-color: #fff;
+                border: 1px solid rgb(94, 92, 92);;
+                background-color: rgb(238, 221, 200);
+                border-radius: 5px;
+                font-size: 15px;
+                color: #4a4a4d;
+                
+            }
+        .input input {
+            box-sizing: border-box;
+	            -webkit-box-sizing: border-box;
+	            -moz-box-sizing: border-box;
+	            border: 1px solid #C2C2C2;
+                box-shadow: 1px 1px 4px #EBEBEB;
+                -moz-box-shadow: 1px 1px 4px #EBEBEB;
+                -webkit-box-shadow: 1px 1px 4px #EBEBEB;
+                border-radius: 5px;
+                -webkit-border-radius: 5px;
+                -moz-border-radius: 5px;
+                padding: 5px;
+                outline: none;
+                text-align: right;
+                width: 80px;
+                height: 25px;
+                margin: 0px;
+            
+        }
+        .box{
+                box-shadow: 1px 1px 8px rgba(63, 62, 62, 0.35);
+                border-radius: 8px;
+                border: 1px solid rgb(167, 114, 92);
+                width: auto;
+
+                padding-left: 100px;
+                padding-right: 100px;
+                margin-top: 10px;
+                margin-bottom: 10px;
+                display: inline-block;
+            }
+            .box2{
+                box-shadow: 1px 1px 8px rgba(63, 62, 62, 0.35);
+                border-radius: 8px;
+                border: 1px solid rgb(167, 114, 92);
+                width: auto;
+                padding-top: 15px;
+                padding-bottom: 15px;
+                padding-left: 100px;
+                padding-right: 100px;
+                margin-top: 8px;
+                margin-bottom: 15px;
+                display: inline-block;
+            }
+            .checkb{
+                padding-top: 10px;
+                text-align: left;
+            }
+            .btn {
+                padding: 0;
+                background-color: rgb(109, 108, 108);
+                border: 1px solid #ddd;
+                color: white;
+                margin: 0px 10px 0px 20px;
+                height: 35px;
+                width: 80px;
+                border-radius: 5px;
+                font-size: 15px;
+            }
+            .inline { 
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+        }
+
+        .box1{
+            margin-left: 31%;
+
+        }
+        </style>
     </head>
     <body>
-        <div class="container">
-            <h1>Define ESCO participation parameters:</h1>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/actor_choice">Search Measure</a></li>
+        </ul>
+        <br>
+        <br>
+        <br>
+        <div class="heading">
+            Define ESCO participation parameters   
+        </div>
+        <br>
+        <div class="box">
             <form action='/esco_params/' method="POST">
                 {% csrf_token %}
-                {{form1.as_p}}
+                {% for field in form1.visible_fields %}
+                <div class="inline">
+                    <div class="lab">
+                        <label for={{field.name}}>
+                            {{ field.label_tag }}
+                        </label>
+                    </div>
+                    <div class="input">
+                        {{ field }}
+                       
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="checkb">
                 <input type="checkbox" name="took_loan" value="esco_loan"/> Take Loan<br>
-                <br>
-                <input type="submit" class="btn" value="OK">
+                </div>
+                <input type="submit" class="btn" value="Submit">
             </form>
             <br>
-            <form action='/esco_params/' method="POST">
-                <h3>Give Criterion Values:</h3>
-                {% csrf_token %}
-                {{form2.as_p}}
-                {{form3.as_p}}
-                <h3>Esco Loan Conditions:</h3>
-                {{form4.as_p}}
-                <input type="submit" class="btn" value="OK">
-            </form>
-
         </div>
+            
+            <form action='/esco_params/' method="POST">
+                {% csrf_token %}
+                {% if form2.visible_fields %}
+                <div class="heading1">
+                    Give Criterion Values
+                </div>
+                {% endif %}
+                
+                <div class="box1">
+                <div class="inline">
+                {% for field in form2.visible_fields %}
+                
+                    <div class="lab1">
+                        <label for={{field.name}}>
+                            {{ field.label_tag }}
+                        </label>
+                    </div>
+                    <div class="input">
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                {% for field in form3.visible_fields %}
+                
+                    <div class="lab1">
+                        <label for={{field.name}}>
+                            {{ field.label_tag }}
+                        </label>
+                    </div>
+                    <div class="input">
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+            <br>
+            <br>
+            {% if form4.visible_fields %}
+                <div class="heading1">
+                    ESCO Loan Conditions
+                </div>
+            
+            <br>
+                <div class="box2">
+            {% for field in form4.visible_fields %}
+            <div class="inline">
+                <div class="lab1">
+                    <label for={{field.name}}>
+                        {{ field.label_tag }}
+                    </label>
+                </div>
+                <div class="input">
+                    {{ field }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+            <br>
+            <div class="but">
+            {% if form2.visible_fields %}
+            <input type="submit" class="btn" value="Submit">
+            {% endif %}
+
+            </div>
+            </form>
     </body>
 </html>
