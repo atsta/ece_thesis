@@ -74,13 +74,17 @@ class Loan():
         Loan.interest_subsidy.append(0)
         Loan.interest_paid.append(0)
 
-        for year in range(1, Loan.period):
+        for year in range(1, Loan.period+1):
             Loan.interest_rate_instalment.append(-np.pmt(self.annual_interest, Loan.period, Loan.repayment_amount, 0))
-            sum_xreolisio = sum_xreolisio + Loan.interest_rate_instalment[year]
             Loan.interest_rate.append(-np.ppmt(self.annual_interest, year, Loan.period, Loan.repayment_amount))
             Loan.interest.append(Loan.interest_rate_instalment[year] - Loan.interest_rate[year])
-            endiameso = Loan.repayment_amount - sum_xreolisio
-            Loan.interest_subsidy.append(endiameso*self.subsidized_interest)
+            if year == 1:
+                Loan.interest_subsidy.append(Loan.repayment_amount*self.subsidized_interest)
+            else:
+                sum_xreolisio = sum_xreolisio + Loan.interest_rate[year-1]
+                endiameso = Loan.repayment_amount - sum_xreolisio
+                Loan.interest_subsidy.append(endiameso*self.subsidized_interest)
+            
             Loan.interest_paid.append(Loan.interest[year] - Loan.interest_subsidy[year])
             Loan.unpaid.append(Loan.unpaid[year-1] - Loan.interest_rate[year])
 

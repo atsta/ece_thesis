@@ -84,10 +84,10 @@ class Perspective():
 
         self.equipment_cost = []
         self.calculate_equipment_cost()
+        Perspective.logistic_cost = self.logistic_cost_without_taxes*1.24
 
         self.construct_benefits_df()
         self.construct_cost_df()
-        Perspective.logistic_cost = self.logistic_cost_without_taxes*1.24
         # whether or not a measure is social sustainable
         # criteria usage 
         self.measure_judgment()
@@ -95,10 +95,27 @@ class Perspective():
 
     def calculate_equipment_cost(self):
         for year in range(self.analysis_period):
-            if year==0 or year==self.measure['lifetime']:
-                self.equipment_cost.append(self.logistic_cost_without_taxes)
+            if year == 0:
+                if self.loan.loan_fund > 0:
+                    self.equipment_cost.append(self.loan.own_fund)
+                else:
+                    self.equipment_cost.append(self.logistic_cost_without_taxes)
+            elif year == self.measure['lifetime']:
+                if self.loan.loan_fund > 0:
+                    if year < self.loan.period+1:
+                        self.equipment_cost.append(self.logistic_cost_without_taxes + self.loan.interest_rate[year]/1.24 + self.loan.interest_paid[year])
+                    else:
+                        self.equipment_cost.append(self.logistic_cost_without_taxes)
+                else:
+                    self.equipment_cost.append(self.logistic_cost_without_taxes)
             else:
-                self.equipment_cost.append(0)
+                if self.loan.loan_fund > 0:
+                    if year < self.loan.period+1:
+                        self.equipment_cost.append(self.loan.interest_rate[year]/1.24 + self.loan.interest_paid[year])
+                    else:
+                        self.equipment_cost.append(0)
+                else:
+                    self.equipment_cost.append(0)
         #print(self.equipment_cost)
 
     def calculate_savings(self):
@@ -205,24 +222,25 @@ class Perspective():
             Perspective.pure_cash_flow[year] = Perspective.pure_cash_flow[year] - sum_costs[year]
             flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
         Perspective.costs['Discounted Cash Flow'] = flow
+        #print(Perspective.costs)
 
 
     def calculate_avg_ratios(self):
         sum_ratios = 0
         num_ratios = 0
-        if self.energy_conservation['electricity'] > 0 :
+        if self.energy_conservation['electricity'] > 0:
             num_ratios = num_ratios + 1 
             sum_ratios = sum_ratios  + self.energy_price_growth_rate['electricity']
-        if self.energy_conservation['diesel_oil'] > 0 :
+        if self.energy_conservation['diesel_oil'] > 0:
             num_ratios = num_ratios + 1 
             sum_ratios = sum_ratios  + self.energy_price_growth_rate['diesel_oil']
-        if self.energy_conservation['motor_gasoline'] > 0 :
+        if self.energy_conservation['motor_gasoline'] > 0:
             num_ratios = num_ratios + 1 
             sum_ratios = sum_ratios  + self.energy_price_growth_rate['motor_gasoline']
-        if self.energy_conservation["natural_gas"] > 0 :
+        if self.energy_conservation["natural_gas"] > 0:
             num_ratios = num_ratios + 1 
             sum_ratios = sum_ratios + self.energy_price_growth_rate["natural_gas"]
-        if self.energy_conservation["biomass"] > 0 :
+        if self.energy_conservation["biomass"] > 0:
             num_ratios = num_ratios +1 
             sum_ratios = sum_ratios + self.energy_price_growth_rate["biomass"]
         Perspective.avg_ratios = sum_ratios/num_ratios 
