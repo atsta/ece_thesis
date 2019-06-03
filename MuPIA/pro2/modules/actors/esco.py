@@ -1,5 +1,5 @@
 from financial_mechanisms import loan
-import investment_analysis_perspective 
+from modules import investment_analysis_perspective 
 
 import numpy as np  
 import decimal

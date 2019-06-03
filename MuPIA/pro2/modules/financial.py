@@ -1,4 +1,3 @@
-#import perspective
 #numpy, pandas
 import numpy as np
 import pandas as pd
@@ -95,13 +94,83 @@ class Loan():
             return 10
 
 class Esco():
-    tax_depreciation_rate = 0
-    tax_lifetime = 0 
-    def __init__(self, measure, tax_rate, tax_depreciation_rate, tax_lifetime):
-        self.tax_rate = tax_rate
-        self.tax_depreciation_rate= tax_depreciation_rate
-        self.tax_lifetime = tax_lifetime
+    #για πειμπακ
+    avg_ratios= 0
 
-        Tax_depreciation.tax_depreciation_rate = self.tax_depreciation_rate
-        Tax_depreciation.tax_lifetime = self.tax_lifetime
+    costs = pd.DataFrame([])
+    benefits = pd.DataFrame([])
 
+    pure_discounted_cash_flow = []
+
+    """
+
+    Investment sustainability criteria:
+        PV κόστους
+        PV οφέλους
+        NPV
+        B/C ratio
+        IRR
+        Simple Payback period (years)
+        Discounted Payback period (years)
+
+    """
+    cost_pv = 0.0 
+    benefit_pv = 0.0
+    npv = 0.0
+    b_to_c = 0.0
+    irr = 0.0
+    pbp = 0.0
+    dpbp = 0.0
+
+    
+    def __init__(self, measure, energy_savings, criterion, criterion_satisfaction, discount_rate, cost_share_rate, benefit_share_rate, contract_period, loan):
+        self.measure = measure
+        self.energy_savings = energy_savings
+        self.criterion = criterion
+        self.criterion_satisfaction = criterion_satisfaction
+        self.discount_rate = discount_rate
+        self.cost_share_rate = cost_share_rate
+        self.benefit_share_rate = benefit_share_rate 
+        self.contract_period = contract_period
+        self.loan = loan
+
+        self.savings_per_year_nontaxable = self.energy_savings
+        self.construct_benefits_df()
+        self.construct_cost_df()
+
+
+    def construct_benefits_df(self):
+        esco_savings = []
+        for year in range(self.contract_period):
+            esco_savings.append(self.benefit_share_rate*self.savings_per_year_nontaxable[year])
+        Esco.benefits['Energy savings'] = esco_savings
+        flow = []
+        sum_benefits = Esco.benefits.sum(axis=1)
+        Esco.pure_cash_flow = sum_benefits
+        for year in range(self.contract_period):
+            flow.append(sum_benefits[year]/(1.0 + self.discount_rate)**year)
+        Esco.benefits['Discounted Cash Flow'] = flow
+
+    def construct_cost_df(self):
+        initial_cost = []
+        if self.loan.loan_fund == 0:
+            # me foro ? horis
+            initial_cost.append(self.measure['cost']*self.cost_share_rate)
+            for year in range(1, self.contract_period):
+                initial_cost.append(0)
+            flow = []
+            sum_costs = Esco.costs.sum(axis=1)
+            for year in range(self.contract_period):
+                Esco.pure_cash_flow[year] = Esco.pure_cash_flow[year] - sum_costs[year]
+                flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
+        else: 
+            initial_cost.append(self.loan.own_fund)
+            for yeat in range(1, self.loan.period):
+                initial_cost.append(self.loan.interest_rate[year]/1.24 + self.loan.interest_paid[year])
+            flow = []
+            sum_costs = Esco.costs.sum(axis=1)
+            for year in range(self.loan.period):
+                Esco.pure_cash_flow[year] = Esco.pure_cash_flow[year] - sum_costs[year]
+                flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
+        Esco.costs['Equipment Cost'] = initial_cost
+        Esco.costs['Discounted Cash Flow'] = flow

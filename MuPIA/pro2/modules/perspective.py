@@ -17,6 +17,8 @@ conn = psycopg2.connect(conn_string)
 
 
 class Perspective():   
+    # να υπολογιστει
+    savings_per_year_nontaxable = []
     # να μπουν σε σελφ
     savings_per_year_taxable = []
     residual_value = []
