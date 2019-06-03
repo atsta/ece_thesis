@@ -70,7 +70,13 @@ def main():
     sub = financial.Subsidy(measure, 0.4)
     tax = financial.Tax_depreciation(measure, 0.25, 0.1, 10)
     #gia na doso logistic cost daneiou elegho an ehei parei epidotisi
-    loan = financial.Loan(measure, 0.25, 0.1, 10)
+    if sub.subsidy_rate>0:
+        logistic_cost = measure['cost']*1.24*(1-sub.subsidy_rate)
+    else:
+        logistic_cost = measure['cost']*1.24
+    #(logistic_cost, loan_rate, annual_interest, subsidized_interest, loan_period, grace_period):
+    loan = financial.Loan(logistic_cost, 0.5, 0.08, 0.024, 3, 0)
+
     esco = financial.Esco(measure, 0.25, 0.1, 10)
     psub =  perspective.Perspective(measure, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, 0.05, sub, loan, esco, tax)
 
