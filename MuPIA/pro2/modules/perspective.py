@@ -27,6 +27,7 @@ class Perspective():
     costs = pd.DataFrame([])
     benefits = pd.DataFrame([])
 
+    logistic_cost = 0
     """
 
     Investment sustainability criteria:
@@ -81,9 +82,24 @@ class Perspective():
             self.tax_depreciation_per_year = []
             self.calculate_tax_depreciation()
 
-        self.construct_benefits_df()
+        self.equipment_cost = []
+        self.calculate_equipment_cost()
 
-        self.calculate_avg_ratios()
+        self.construct_benefits_df()
+        self.construct_cost_df()
+        Perspective.logistic_cost = self.logistic_cost_without_taxes*1.24
+        # whether or not a measure is social sustainable
+        # criteria usage 
+        self.measure_judgment()
+
+
+    def calculate_equipment_cost(self):
+        for year in range(self.analysis_period):
+            if year==0 or year==self.measure['lifetime']:
+                self.equipment_cost.append(self.logistic_cost_without_taxes)
+            else:
+                self.equipment_cost.append(0)
+        #print(self.equipment_cost)
 
     def calculate_savings(self):
         self.energy_savings_with_taxes['electricity'].append(self.energy_conservation["electricity"]*self.energy_price['electricity'])
@@ -160,7 +176,7 @@ class Perspective():
                 continue
             if item == 'maintenance':
                 val = self.get_benefit("maintenance")
-                print(val)
+                #print(val)
                 maintenance = []
                 for year in range(self.analysis_period):
                     maintenance.append(val)
@@ -170,12 +186,25 @@ class Perspective():
                 continue
         flow = []
         sum_benefits = Perspective.benefits.sum(axis=1)
+        Perspective.pure_cash_flow = sum_benefits
         for year in range(self.analysis_period):
             flow.append(sum_benefits[year]/(1.0 + self.discount_rate)**year)
         Perspective.benefits['Discounted Cash Flow'] = flow
         #print(flow)
-        print(Perspective.benefits)
+        #print(Perspective.benefits)
 
+    def construct_cost_df(self):
+        for item in self.selected_costs:
+            if item == 'equipment':
+                Perspective.costs['Equipment Cost'] = self.equipment_cost
+            # if loan add special column gia tis doseis
+            
+        flow = []
+        sum_costs = Perspective.costs.sum(axis=1)
+        for year in range(self.analysis_period):
+            Perspective.pure_cash_flow[year] = Perspective.pure_cash_flow[year] - sum_costs[year]
+            flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
+        Perspective.costs['Discounted Cash Flow'] = flow
 
 
     def calculate_avg_ratios(self):
@@ -183,22 +212,41 @@ class Perspective():
         num_ratios = 0
         if self.energy_conservation['electricity'] > 0 :
             num_ratios = num_ratios + 1 
-            sum_ratios = sum_ratios - 1 + self.energy_price_growth_rate['electricity']
+            sum_ratios = sum_ratios  + self.energy_price_growth_rate['electricity']
         if self.energy_conservation['diesel_oil'] > 0 :
             num_ratios = num_ratios + 1 
-            sum_ratios = sum_ratios - 1 + self.energy_price_growth_rate['diesel_oil']
+            sum_ratios = sum_ratios  + self.energy_price_growth_rate['diesel_oil']
         if self.energy_conservation['motor_gasoline'] > 0 :
             num_ratios = num_ratios + 1 
-            sum_ratios = sum_ratios - 1 + self.energy_price_growth_rate['motor_gasoline']
+            sum_ratios = sum_ratios  + self.energy_price_growth_rate['motor_gasoline']
         if self.energy_conservation["natural_gas"] > 0 :
             num_ratios = num_ratios + 1 
-            sum_ratios = sum_ratios - 1+ self.energy_price_growth_rate["natural_gas"]
+            sum_ratios = sum_ratios + self.energy_price_growth_rate["natural_gas"]
         if self.energy_conservation["biomass"] > 0 :
             num_ratios = num_ratios +1 
-            sum_ratios = sum_ratios - 1+ self.energy_price_growth_rate["biomass"]
+            sum_ratios = sum_ratios + self.energy_price_growth_rate["biomass"]
         Perspective.avg_ratios = sum_ratios/num_ratios 
 
+    def calculate_simplePBP(self):
+        pbp = 1 
+        diff = Perspective.pure_cash_flow[0]
+        while diff < 0:
+            diff = diff + Perspective.pure_cash_flow[pbp]
+            pbp = pbp +1 
+        return pbp
 
+    def calculate_discountedPBP(self):
+        self.calculate_avg_ratios()
+        dpbp = np.log((Perspective.pbp*(1+self.discount_rate))*((1 + Perspective.avg_ratios)/(1+self.discount_rate)-1)+1)/np.log((1 + Perspective.avg_ratios)/(1+self.discount_rate))
+        return dpbp
 
-  
+    def measure_judgment(self):
+        Perspective.cost_pv = Perspective.costs[['Discounted Cash Flow']].sum()
+        Perspective.benefit_pv = Perspective.benefits[['Discounted Cash Flow']].sum()
+        #print(Perspective.benefit_pv)
 
+        Perspective.npv = Perspective.benefit_pv - Perspective.cost_pv
+        Perspective.b_to_c = Perspective.benefit_pv/Perspective.cost_pv
+        Perspective.irr =  irr = np.irr(Perspective.pure_cash_flow)
+        Perspective.pbp = self.calculate_simplePBP()
+        Perspective.dpbp = self.calculate_discountedPBP()
