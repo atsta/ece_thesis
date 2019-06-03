@@ -49,6 +49,8 @@ class Perspective():
     irr = 0.0
     pbp = 0.0
     dpbp = 0.0
+    def __delete__(self, val):
+        del self
 
     def __init__(self, measure, energy_conservation, energy_price, energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, subsidy, loan, esco, tax_depreciation):
         self.measure = measure
@@ -137,11 +139,17 @@ class Perspective():
 
     def calculate_annual_savings(self):
         savings_sum = sum(self.energy_savings_with_taxes[k][0] for k in self.energy_conservation)
-        Perspective.savings_per_year_taxable.append(savings_sum)
+        if self.esco.benefit_share ==0 :
+            Perspective.savings_per_year_taxable.append(savings_sum)
+        else: 
+            Perspective.savings_per_year_taxable.append((1-self.esco.benefit_share)*savings_sum)
 
         for year in range(1, self.analysis_period):
             savings_sum = sum(self.energy_savings_with_taxes[k][year] for k in self.energy_conservation)
-            Perspective.savings_per_year_taxable.append(savings_sum)
+            if self.esco.benefit_share ==0 or year >= self.esco.period:
+                Perspective.savings_per_year_taxable.append(savings_sum)
+            else: 
+                Perspective.savings_per_year_taxable.append((1-self.esco.benefit_share)*savings_sum)            
         #print(Perspective.savings_per_year_taxable)
 
     
@@ -188,7 +196,9 @@ class Perspective():
     def construct_benefits_df(self):
         for item in self.selected_benefits:
             if item == 'energy_savings':
+                print(len(Perspective.savings_per_year_taxable))
                 Perspective.benefits['Energy savings'] = Perspective.savings_per_year_taxable
+
                 continue
             if self.subsidy.subsidy_rate > 0 and item == 'tax_depreciation':
                 Perspective.benefits['Benefit from Tax Depreciation'] = self.tax_depreciation_per_year
@@ -206,6 +216,7 @@ class Perspective():
         flow = []
         sum_benefits = Perspective.benefits.sum(axis=1)
         Perspective.pure_cash_flow = sum_benefits
+        #print(Perspective.pure_cash_flow)
         for year in range(self.analysis_period):
             flow.append(sum_benefits[year]/(1.0 + self.discount_rate)**year)
         Perspective.benefits['Discounted Cash Flow'] = flow
