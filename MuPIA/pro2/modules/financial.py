@@ -231,7 +231,7 @@ class Esco():
                 Esco.pure_discounted_cash_flow[year] = Esco.pure_discounted_cash_flow[year] - sum_costs[year]
                 flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
             Esco.costs['Discounted Cash Flow'] = flow
-        print(Esco.costs['Equipment Cost'])
+        #print(Esco.costs['Equipment Cost'])
 
 
     def calculate_simplePBP(self):
