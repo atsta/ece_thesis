@@ -49,8 +49,6 @@ class Perspective():
     irr = 0.0
     pbp = 0.0
     dpbp = 0.0
-    def __delete__(self, val):
-        del self
 
     def __init__(self, measure, energy_conservation, energy_price, energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, subsidy, loan, esco, tax_depreciation):
         self.measure = measure
@@ -196,7 +194,7 @@ class Perspective():
     def construct_benefits_df(self):
         for item in self.selected_benefits:
             if item == 'energy_savings':
-                print(len(Perspective.savings_per_year_taxable))
+                #print(len(Perspective.savings_per_year_taxable))
                 Perspective.benefits['Energy savings'] = Perspective.savings_per_year_taxable
 
                 continue
@@ -281,3 +279,26 @@ class Perspective():
         Perspective.irr =  irr = np.irr(Perspective.pure_cash_flow)
         Perspective.pbp = self.calculate_simplePBP()
         Perspective.dpbp = self.calculate_discountedPBP()
+    
+    def clear(self):
+        # να υπολογιστει
+        Perspective.savings_per_year_nontaxable = []
+        # να μπουν σε σελφ
+        Perspective.savings_per_year_taxable = []
+        Perspective.residual_value = []
+        
+        #για πειμπακ
+        Perspective.avg_ratios= 0
+
+        Perspective.costs = pd.DataFrame([])
+        Perspective.benefits = pd.DataFrame([])
+
+        Perspective.logistic_cost = 0
+ 
+        Perspective.cost_pv = 0.0 
+        Perspective.benefit_pv = 0.0
+        Perspective.npv = 0.0
+        Perspective.b_to_c = 0.0
+        Perspective.irr = 0.0
+        Perspective.pbp = 0.0
+        Perspective.dpbp = 0.0

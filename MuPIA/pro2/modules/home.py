@@ -74,10 +74,19 @@ def main():
         logistic_cost = measure['cost']*1.24*(1-sub.subsidy_rate)
     else:
         logistic_cost = measure['cost']*1.24
+
+    fake_loan = financial.Loan(0,0,0,0,0,0)
+
+    esco = financial.Esco(measure, [], 0, "irr", "metavoli_periodou", 0, 0, 0, 0, fake_loan)
+
+    fake_loan.clear()
+
     #(logistic_cost, loan_rate, annual_interest, subsidized_interest, loan_period, grace_period):
     loan = financial.Loan(logistic_cost, 0.5, 0.08, 0.024, 3, 0)
     
-    fake_loan = financial.Loan(0,0,0,0,0,0)
+    psub =  perspective.Perspective(measure, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, 0.05, sub, loan, esco, tax)
+    
+    esco.clear()
 
     esco_took_loan = 1
     if esco_took_loan == 0:
@@ -86,15 +95,15 @@ def main():
         cost_share = 0.8
         cost_esco = cost_share*measure['cost']*1.24
         #print(cost_esco)
+        loan.clear()
         esco_loan = financial.Loan(cost_esco, 0.5, 0.08, 0.024, 10, 0)
 
-    esco = financial.Esco(measure, [], 0, "irr", "metavoli_periodou", 0, 0, 0, 0, fake_loan)
-
-    psub =  perspective.Perspective(measure, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, 0.05, sub, loan, esco, tax)
-
     esco_actor = financial.Esco(measure, psub.benefits['Energy savings'], psub.avg_ratios, "irr", "metavoli_periodou", 0.06, 0.8, 0.7, 8, esco_loan)
-    del psub
-    #__delete__(self, psub)
+    
+    psub.clear()
+    
+    loan = financial.Loan(logistic_cost, 0.5, 0.08, 0.024, 3, 0)
+
     p =  perspective.Perspective(measure, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, 0.05, sub, loan, esco_actor, tax)
 
 

@@ -11,6 +11,9 @@ class Subsidy():
 
         Subsidy.subsidy_rate = self.subsidy_rate
         Subsidy.state_cost = self.measure['cost']*self.subsidy_rate*1.24
+    def clear(self):
+        Subsidy.subsidy_rate = 0
+        Subsidy.state_cost = 0
 
 
 class Tax_depreciation():
@@ -25,6 +28,11 @@ class Tax_depreciation():
         Tax_depreciation.tax_depreciation_rate = self.tax_depreciation_rate
         Tax_depreciation.tax_lifetime = self.tax_lifetime
         Tax_depreciation.tax_rate = self.tax_rate
+    
+    def clear(self):
+        Tax_depreciation.tax_depreciation_rate = 0
+        Tax_depreciation.tax_lifetime = 0 
+        Tax_depreciation.tax_rate = 0
 
 class Loan(): 
     own_funds_rate = 0
@@ -92,6 +100,25 @@ class Loan():
             return 3
         else: 
             return 10
+    
+    def clear(self):
+        Loan.own_funds_rate = 0
+        Loan.own_fund = 0
+        Loan.loan_fund = 0
+        Loan.period = 0
+        Loan.repayment_amount = 0
+        #tok/ki dosi ana etos danismou
+        Loan.interest_rate_instalment = []
+        #xreolisio ana etos danismou
+        Loan.interest_rate = []
+        #tokos
+        Loan.interest = []
+        #epidotisi tokou 
+        Loan.interest_subsidy = []
+        #tokos pliroteos 
+        Loan.interest_paid = []
+        #aneksoflito ipolipo
+        Loan.unpaid = []
 
 class Esco():
     costs = pd.DataFrame([])
@@ -138,9 +165,9 @@ class Esco():
         Esco.period = self.contract_period
 
         self.savings_per_year_nontaxable = self.energy_savings
-
-        self.construct_benefits_df()
-        self.construct_cost_df()
+        if Esco.benefit_share > 0:
+            self.construct_benefits_df()
+            self.construct_cost_df()
         if Esco.benefit_share > 0:
             self.esco_judgment()
 
@@ -180,9 +207,11 @@ class Esco():
         initial_cost = []
         if self.loan.loan_fund == 0:
             # me foro ? horis
-            initial_cost.append(self.measure['cost']*self.cost_share_rate)
-            for year in range(1, self.contract_period):
-                initial_cost.append(0)
+            for year in range(self.contract_period):
+                if year == 0:            
+                    initial_cost.append(self.measure['cost']*self.cost_share_rate)
+                else:
+                    initial_cost.append(0)
             flow = []
             Esco.costs['Equipment Cost'] = initial_cost
             sum_costs = Esco.costs.sum(axis=1)
@@ -202,7 +231,7 @@ class Esco():
                 Esco.pure_discounted_cash_flow[year] = Esco.pure_discounted_cash_flow[year] - sum_costs[year]
                 flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
             Esco.costs['Discounted Cash Flow'] = flow
-        #print(Esco.costs['Equipment Cost'])
+        print(Esco.costs['Equipment Cost'])
 
 
     def calculate_simplePBP(self):
@@ -233,3 +262,20 @@ class Esco():
 
         Esco.pbp = self.calculate_simplePBP()
         Esco.dpbp = self.calculate_discountedPBP()
+    
+    def clear(self):
+        Esco.costs = pd.DataFrame([])
+        Esco.benefits = pd.DataFrame([])
+
+        Esco.pure_discounted_cash_flow = []
+        Esco.benefit_share = 0
+        Esco.period = 0
+
+        Esco.cost_pv = 0.0 
+        Esco.benefit_pv = 0.0
+        Esco.npv = 0.0
+        Esco.b_to_c = 0.0
+        Esco.irr = 0.0
+        Esco.profit = 0.0
+        Esco.pbp = 0.0
+        Esco.dpbp = 0.0
