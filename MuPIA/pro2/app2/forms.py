@@ -1,5 +1,5 @@
 from django import forms
-from app2.models import Measure
+from app2.models import Measure, Perspective, Esco
 from django.core import validators, serializers
 
 
@@ -11,6 +11,12 @@ class NewMeasureForm(forms.ModelForm):
         def get_measure(self):
             return self.model
 
+class PerspectiveForm(forms.ModelForm):
+    class Meta:
+        model = Perspective
+        fields = '__all__'
+
+
 
 class SomeInput(forms.Form):
     measure = forms.CharField(max_length=15)
@@ -18,48 +24,48 @@ class SomeInput(forms.Form):
 
 #class ChooseMeasures(forms.Form):
 
-MECHANISM1_CHOICES = [
+MECHANISM1_CHOICES = (
     ('subsidy', 'Subsidy'),
     ("tax_exemption", "Tax Exemption"), 
     ("loan", "Loan of beneficiary"),
     ("increase_factor", "Increase of depreciation factor of fixed assets"),
     ("energy_contract", "Energy Contract"),
-]
+)
 
-MECHANISM2_CHOICES = [
+MECHANISM2_CHOICES = (
     ('subsidy', 'Subsidy'),
     ("tax_exemption", "Tax Exemption"), 
     ("loan", "Loan of beneficiary"),
     ("increase_factor", "Increase of depreciation factor of fixed assets"),
-]
+)
 
-MECHANISM3_CHOICES = [
+MECHANISM3_CHOICES = (
     ('subsidy', 'Subsidy'),
     ("tax_exemption", "Tax Exemption"), 
     ("loan", "Loan of beneficiary"),
     ("energy_contract", "Energy Contract"),
-]
+)
 
-MECHANISM4_CHOICES = [
+MECHANISM4_CHOICES = (
     ('subsidy', 'Subsidy'),
     ("tax_exemption", "Tax Exemption"), 
     ("loan", "Loan of beneficiary"),
-]
+)
 
 class MechForm1(forms.Form):
-    chosen_mechanism = forms.CharField(label="Financial Mechanism", widget=forms.Select(choices=MECHANISM1_CHOICES))
+    chosen_mechanism = forms.MultipleChoiceField(label="Financial Mechanism", widget=forms.CheckboxSelectMultiple,choices=MECHANISM1_CHOICES)
 
 class MechForm2(forms.Form):
-    chosen_mechanism = forms.CharField(label="Financial Mechanism", widget=forms.Select(choices=MECHANISM2_CHOICES))
+    chosen_mechanism = forms.MultipleChoiceField(label="Financial Mechanism", widget=forms.CheckboxSelectMultiple,choices=MECHANISM2_CHOICES)
 
 class MechForm3(forms.Form):
-    chosen_mechanism = forms.CharField(label="Financial Mechanism", widget=forms.Select(choices=MECHANISM3_CHOICES))
+    chosen_mechanism = forms.MultipleChoiceField(label="Financial Mechanism", widget=forms.CheckboxSelectMultiple,choices=MECHANISM3_CHOICES)
 
 class MechForm4(forms.Form):
-    chosen_mechanism = forms.CharField(label="Financial Mechanism", widget=forms.Select(choices=MECHANISM4_CHOICES))
+    chosen_mechanism = forms.MultipleChoiceField(label="Financial Mechanism", widget=forms.CheckboxSelectMultiple,choices=MECHANISM4_CHOICES)
 
 class LoanForm(forms.Form):
-    own_funds_rate = forms.FloatField()
+    loan_rate = forms.FloatField()
     annual_rate = forms.FloatField()
     subsidized_interest_rate = forms.FloatField()
     loan_period = forms.IntegerField(initial=0, required=False)
@@ -112,8 +118,11 @@ class DInput(forms.Form):
     dpbp = forms.FloatField()
 
 class EscoLoan(forms.Form):
-    own_funds_rate = forms.FloatField()
+    loan_rate = forms.FloatField()
     annual_rate = forms.FloatField()
     subsidized_interest_rate = forms.FloatField()
     loan_period = forms.IntegerField(initial=0, required=False)
     grace_period = forms.IntegerField(initial=0)
+
+class SubsidyForm(forms.Form):
+    subsidy_rate = forms.FloatField()

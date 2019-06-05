@@ -20,7 +20,7 @@ class Tax_depreciation():
     tax_depreciation_rate = 0
     tax_lifetime = 0 
     tax_rate = 0
-    def __init__(self, measure, tax_rate, tax_depreciation_rate, tax_lifetime):
+    def __init__(self,tax_rate, tax_depreciation_rate, tax_lifetime):
         self.tax_rate = tax_rate
         self.tax_depreciation_rate= tax_depreciation_rate
         self.tax_lifetime = tax_lifetime
@@ -128,6 +128,9 @@ class Esco():
     benefit_share = 0
     period = 0
 
+    sum_costs = 0
+    sum_benefits = 0
+
     """
 
     Investment sustainability criteria:
@@ -150,11 +153,12 @@ class Esco():
     dpbp = 0.0
 
     
-    def __init__(self, measure, energy_savings, avg_ratios, criterion, criterion_satisfaction, discount_rate, cost_share_rate, benefit_share_rate, contract_period, loan):
+    def __init__(self, measure, energy_savings, avg_ratios, criterion, criterion_value, criterion_satisfaction, discount_rate, cost_share_rate, benefit_share_rate, contract_period, loan):
         self.measure = measure
         self.energy_savings = energy_savings
         self.avg_ratios = avg_ratios
         self.criterion = criterion
+        self.criterion_value = criterion_value
         self.criterion_satisfaction = criterion_satisfaction
         self.discount_rate = discount_rate
         self.cost_share_rate = cost_share_rate
@@ -165,12 +169,24 @@ class Esco():
         Esco.period = self.contract_period
 
         self.savings_per_year_nontaxable = self.energy_savings
+        self.initialize_criterion_params()
         if Esco.benefit_share > 0:
             self.construct_benefits_df()
             self.construct_cost_df()
+            self.esco_criterion_satisfy()
+        self.clear()
+        Esco.benefit_share = self.benefit_share_rate
+        Esco.period = self.contract_period
         if Esco.benefit_share > 0:
-            self.esco_judgment()
+            self.construct_benefits_df()
+            self.construct_cost_df()
+            self.measure_judgement()
 
+    def initialize_criterion_params(self):
+        if self.criterion_satisfaction == 'benefit_share':
+            self.benefit_share_rate = 1
+        elif self.criterion_satisfaction == 'cost_esco':
+            self.cost_share_rate = 1
 
     def construct_benefits_df(self):
         esco_savings = []
@@ -244,24 +260,78 @@ class Esco():
         return pbp
 
     def calculate_discountedPBP(self):
-        dpbp = np.log((Esco.pbp*(1+self.discount_rate))*((1 + self.avg_ratios)/(1+self.discount_rate)-1)+1)/np.log((1 + self.avg_ratios)/(1+self.discount_rate))
+        dpbp = float(np.log((Esco.pbp*(1+self.discount_rate))*(float((1 + self.avg_ratios))/(1+self.discount_rate)-1)+1))/np.log(float(1 + self.avg_ratios)/(1+self.discount_rate))
         return dpbp
 
+    def get_cost_share(self):
+        sum_loan_costs = Esco.costs['Equipment Cost'].sum() - Esco.costs.iloc[0]['Equipment Cost']
+        desired_cost = Esco.sum_costs - sum_loan_costs
+        #print(desired_cost)
+        self.cost_share_rate = desired_cost/Esco.costs.iloc[0]['Equipment Cost']
+        print(self.cost_share_rate)
+    
+    def get_benefit_share(self):
+        print(Esco.benefits)
+        self.benefit_share = Esco.sum_benefits/Esco.benefits['Energy savings'].sum()
+        print(self.benefit_share)
 
-    def esco_judgment(self):
-        Esco.cost_pv = Esco.costs[['Discounted Cash Flow']].sum()
-        Esco.benefit_pv = Esco.benefits[['Discounted Cash Flow']].sum()
-        #print(Perspective.benefit_pv)
+    def calculate_flow_from_pbp(self):
+        pbp = self.criterion_value
+        if self.criterion_satisfaction == "cost_esco":
+            new_cost = Esco.benefits.iloc[pbp-1]['Discounted Cash Flow']
+            self.cost_share_rate = new_cost/Esco.costs.iloc[pbp-1]['Discounted Cash Flow']
+        if self.criterion_satisfaction == "benefit_share":
+            new_benefit = Esco.costs.iloc[pbp-1]['Discounted Cash Flow']
+            self.benefit_share_rate = new_benefit/Esco.benefits.iloc[pbp-1]['Discounted Cash Flow']
 
+
+    def esco_criterion_satisfy(self):
+        if self.criterion == "npv":
+            if self.criterion_satisfaction == 'cost_esco':
+                Esco.sum_costs = Esco.benefits['Discounted Cash Flow'].sum() - self.criterion_value 
+                sum_loan_costs = Esco.costs['Discounted Cash Flow'].sum() - Esco.costs.iloc[0]['Discounted Cash Flow']
+                desired_cost = Esco.sum_costs - sum_loan_costs
+                self.cost_share_rate = desired_cost/Esco.costs.iloc[0]['Discounted Cash Flow']
+                print(self.cost_share_rate)            
+            else:
+                Esco.sum_benefits = Esco.costs['Discounted Cash Flow'].sum() + self.criterion_value
+                self.benefit_share_rate = Esco.sum_benefits/Esco.benefits['Discounted Cash Flow'].sum()
+        if self.criterion == "b_to_c":
+            if self.criterion_satisfaction == 'cost_esco':
+                Esco.sum_costs = Esco.benefits['Energy savings'].sum()/self.criterion_value 
+                self.get_cost_share()
+            else:
+                Esco.sum_benefits = Esco.costs['Equipment Cost'].sum()*self.criterion_value
+                self.get_benefit_share()
+                 
+        if self.criterion == "profit":
+            if self.criterion_satisfaction == 'cost_esco':
+                Esco.sum_costs = Esco.benefits['Energy savings'].sum()/(self.criterion_value + 1)
+                self.get_cost_share()
+            else:
+                Esco.sum_benefits = Esco.costs['Equipment Cost'].sum()*(1+self.criterion_value)
+                self.get_benefit_share()
+
+        if self.criterion == 'spbp':
+            self.calculate_flow_from_pbp()
+
+    
+    def measure_judgement(self):
+        #print(Esco.costs)
+        #print(Esco.benefits)
+        Esco.cost_pv = Esco.costs['Discounted Cash Flow'].sum()
+        Esco.benefit_pv = Esco.benefits['Discounted Cash Flow'].sum()
         Esco.npv = Esco.benefit_pv - Esco.cost_pv
-        Esco.b_to_c = Esco.benefit_pv/Esco.cost_pv
+        Esco.b_to_c = Esco.benefit_pv/Esco.cost_pv  
         Esco.irr =  irr = np.irr(Esco.pure_discounted_cash_flow)
-        sum1 = Esco.costs[['Equipment Cost']].sum()
-        if not(sum1.empty) :
-            Esco.profit = (Esco.benefits[['Energy savings']].sum() - Esco.costs[['Equipment Cost']].sum())/sum1
-
+        print(Esco.irr)
         Esco.pbp = self.calculate_simplePBP()
         Esco.dpbp = self.calculate_discountedPBP()
+        sum1 = Esco.costs['Equipment Cost'].sum()
+        if sum1 !=0 :
+            Esco.profit = (Esco.benefits['Energy savings'].sum() - Esco.costs['Equipment Cost'].sum())/sum1
+
+    
     
     def clear(self):
         Esco.costs = pd.DataFrame([])
@@ -270,6 +340,8 @@ class Esco():
         Esco.pure_discounted_cash_flow = []
         Esco.benefit_share = 0
         Esco.period = 0
+        sum_costs = 0 
+        sum_benefits = 0
 
         Esco.cost_pv = 0.0 
         Esco.benefit_pv = 0.0

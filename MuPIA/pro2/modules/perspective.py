@@ -9,7 +9,6 @@ import psycopg2.extras
 import numpy as np
 import pandas as pd
 
-import financial
 
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
 # get a connection with energy db
@@ -121,19 +120,19 @@ class Perspective():
         #print(self.equipment_cost)
 
     def calculate_savings(self):
-        self.energy_savings_with_taxes['electricity'].append(self.energy_conservation["electricity"]*self.energy_price['electricity'])
-        self.energy_savings_with_taxes['diesel_oil'].append(self.energy_conservation["diesel_oil"]*self.energy_price['diesel_oil'])
-        self.energy_savings_with_taxes['motor_gasoline'].append(self.energy_conservation["motor_gasoline"]*self.energy_price['motor_gasoline'])
-        self.energy_savings_with_taxes['natural_gas'].append(self.energy_conservation["natural_gas"]*self.energy_price['natural_gas'])
-        self.energy_savings_with_taxes['biomass'].append(self.energy_conservation["biomass"]*self.energy_price['biomass'])
+        self.energy_savings_with_taxes['electricity'].append(self.energy_conservation["electricity"]*float(self.energy_price['electricity']))
+        self.energy_savings_with_taxes['diesel_oil'].append(self.energy_conservation["diesel_oil"]*float(self.energy_price['diesel_oil']))
+        self.energy_savings_with_taxes['motor_gasoline'].append(self.energy_conservation["motor_gasoline"]*float(self.energy_price['motor_gasoline']))
+        self.energy_savings_with_taxes['natural_gas'].append(self.energy_conservation["natural_gas"]*float(self.energy_price['natural_gas']))
+        self.energy_savings_with_taxes['biomass'].append(self.energy_conservation["biomass"]*float(self.energy_price['biomass']))
         #print(self.energy_savings_with_taxes)
         
         for year in range(1, self.analysis_period):
-            self.energy_savings_with_taxes['electricity'].append(self.energy_savings_with_taxes['electricity'][year-1]*(1+self.energy_price_growth_rate['electricity']))
-            self.energy_savings_with_taxes['diesel_oil'].append(self.energy_savings_with_taxes['diesel_oil'][year-1]*(1+self.energy_price_growth_rate['diesel_oil']))
-            self.energy_savings_with_taxes['motor_gasoline'].append(self.energy_savings_with_taxes["motor_gasoline"][year-1]*(1+self.energy_price_growth_rate['motor_gasoline']))
-            self.energy_savings_with_taxes['natural_gas'].append(self.energy_savings_with_taxes["natural_gas"][year-1]*(1+self.energy_price_growth_rate['natural_gas']))
-            self.energy_savings_with_taxes['biomass'].append(self.energy_savings_with_taxes["biomass"][year-1]*(1+self.energy_price_growth_rate['biomass']))
+            self.energy_savings_with_taxes['electricity'].append(self.energy_savings_with_taxes['electricity'][year-1]*float((1+self.energy_price_growth_rate['electricity'])))
+            self.energy_savings_with_taxes['diesel_oil'].append(self.energy_savings_with_taxes['diesel_oil'][year-1]*float((1+self.energy_price_growth_rate['diesel_oil'])))
+            self.energy_savings_with_taxes['motor_gasoline'].append(self.energy_savings_with_taxes["motor_gasoline"][year-1]*float((1+self.energy_price_growth_rate['motor_gasoline'])))
+            self.energy_savings_with_taxes['natural_gas'].append(self.energy_savings_with_taxes["natural_gas"][year-1]*float((1+self.energy_price_growth_rate['natural_gas'])))
+            self.energy_savings_with_taxes['biomass'].append(self.energy_savings_with_taxes["biomass"][year-1]*float((1+self.energy_price_growth_rate['biomass'])))
 
     def calculate_annual_savings(self):
         savings_sum = sum(self.energy_savings_with_taxes[k][0] for k in self.energy_conservation)
@@ -259,14 +258,14 @@ class Perspective():
     def calculate_simplePBP(self):
         pbp = 1 
         diff = Perspective.pure_cash_flow[0]
-        while diff < 0:
+        while diff < 0 and pbp < self.analysis_period-1:
             diff = diff + Perspective.pure_cash_flow[pbp]
             pbp = pbp +1 
         return pbp
 
     def calculate_discountedPBP(self):
         self.calculate_avg_ratios()
-        dpbp = np.log((Perspective.pbp*(1+self.discount_rate))*((1 + Perspective.avg_ratios)/(1+self.discount_rate)-1)+1)/np.log((1 + Perspective.avg_ratios)/(1+self.discount_rate))
+        dpbp = float(np.log((Perspective.pbp*(1+self.discount_rate))*(float((1 + Perspective.avg_ratios))/(1+self.discount_rate)-1)+1))/np.log(float(1 + Perspective.avg_ratios)/(1+self.discount_rate))
         return dpbp
 
     def measure_judgment(self):

@@ -207,7 +207,7 @@ class Social():
     def calculate_simplePBP(self):
         pbp = 1 
         diff = Social.pure_cash_flow[0]
-        while diff < 0:
+        while diff < 0 and pbp < analysis_period -1:
             diff = diff + Social.pure_cash_flow[pbp]
             pbp = pbp +1 
         return pbp

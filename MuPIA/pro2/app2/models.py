@@ -89,3 +89,35 @@ class Social(models.Model):
     b_to_c = models.FloatField(default=0, null=True)
     irr = models.FloatField(default=0, null=True)
     dpbp = models.FloatField(default=0, null=True)
+
+class Perspective(models.Model):
+    name = models.CharField(primary_key=True, max_length=150, unique=True, default=None)
+    measure = models.ForeignKey(Measure, on_delete=models.CASCADE, default=None)
+
+    discount_rate = models.FloatField(default=0.03)
+    analysis_period = models.IntegerField(default=25)
+    financial_mechanisms = models.CharField(max_length=150, default=None, null=True)
+
+    #selected costs and benefits for this analysis
+    costs = models.CharField(max_length=150, default=None, null=True)
+    benefits = models.CharField(max_length=150, default=None, null=True)
+
+    npv = models.FloatField(default=0, null=True)
+    b_to_c = models.FloatField(default=0, null=True)
+    irr = models.FloatField(default=0, null=True)
+    dpbp = models.FloatField(default=0, null=True)
+    spbp = models.FloatField(default=0, null=True)
+
+class Esco(models.Model):
+    perspective_analysis = models.ForeignKey(Perspective, on_delete=models.CASCADE, default=None)
+    discount_rate = models.FloatField(default=0.03)
+    
+    benefit_share = models.FloatField(default=0, null=True)
+    cost_share = models.FloatField(default=0, null=True)
+    contract_period = models.IntegerField(default=0, null=True)
+
+    npv = models.FloatField(default=0, null=True)
+    b_to_c = models.FloatField(default=0, null=True)
+    irr = models.FloatField(default=0, null=True)
+    dpbp = models.FloatField(default=0, null=True)
+    spbp = models.FloatField(default=0, null=True)

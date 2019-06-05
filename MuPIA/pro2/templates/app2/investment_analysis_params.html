@@ -12,7 +12,7 @@
                 background-color: rgb(238, 221, 200);
                 color: #4a4a4d;
             }
-            ul {
+            .top ul {
                 list-style-type: none;
                 margin: 0;
                 padding: 0;
@@ -23,11 +23,11 @@
                 width: 100%;
             }
 
-            li {
+            .top li {
                 float: left;
             }
 
-            li a {
+            .top li a {
                 display: block;
                 color: white;
                 text-align: center;
@@ -35,7 +35,7 @@
                 text-decoration: none;
             }
 
-            li a:hover:not(.active) {
+            .top li a:hover:not(.active) {
                 background-color: rgb(109, 108, 108);
             }
 
@@ -63,21 +63,18 @@
                 display: inline-block;
             }
             .form-inline { 
-                display: flex;
 
-                align-items: center;
+                display: block;
             }
             .fin{
                 text-align: center;
             }
-            .form-inline select {
+            .form-inline input{
                 vertical-align: middle;
                 margin: 5px 8px 5px 0;
                 padding: 5px;
                 background-color: #fff;
-                border: 1px solid rgb(94, 92, 92);;
                 background-color: rgb(238, 221, 200);
-                border-radius: 5px;
                 font-size: 15px;
                 color: #4a4a4d;
                 width: auto;
@@ -144,10 +141,12 @@
         </style>
     </head>
     <body>
+        <div class="top">
         <ul>
             <li><a href="/">Home</a></li>
             <li><a href="/actor_choice">Search Measure</a></li>
         </ul>
+    </div>
         <br>
         <br>
         <br>
@@ -157,16 +156,35 @@
         <br>
         <div class="box">
 
-        <form class="form-inline" action='/grab_params_and_proceed/' method="POST">
-            {% csrf_token %}
-            {{form.as_p}}
-            <input type="submit" class="btn" value="OK">
-        </form>
+            <form class="form-inline" action='/grab_params_and_proceed/' method="POST">
+                {% csrf_token %}
+                {{form.as_p}}
+                <input type="submit" class="btn" value="OK">
+            </form>
         <form method="POST" action='/financial_mechanism_params/'>
             {% csrf_token %}
-            {% if form1.visible_fields %}
-            <div class="heading">Insert Parameters</div>
+            {% if form1.visible_fields or form2.visible_fields  or form3.visible_fields%}
+                <div class="heading">Insert Parameters</div>
             {% endif %}
+
+            {% if form3.visible_fields %}
+            {% for field in form3.visible_fields %}
+            <div class="lab">
+                <label for={{field.name}}>
+                    {{ field.label_tag }}
+                </label>
+            </div>
+            <div class="input">
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {% endif %}
+                <br>
+                <br>
+            {% if form1.visible_fields %}
             {% for field in form1.visible_fields %}
             <div class="lab">
                 <label for={{field.name}}>
@@ -180,8 +198,26 @@
                     {% endif %}
                 </div>
             {% endfor %}
+            {% endif %}
             <br>
-            {% if form1.visible_fields %}
+            <br>
+            {% if form2.visible_fields %}
+            {% for field in form2.visible_fields %}
+            <div class="lab">
+                <label for={{field.name}}>
+                    {{ field.label_tag }}
+                </label>
+            </div>
+            <div class="input">
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <br>
+            {% endif %}
+            {% if form1.visible_fields or form2.visible_fields or form3.visible_fields %}
             <div class="fin">
                 <input type="submit" class="btn" value="Submit">
             </div>
