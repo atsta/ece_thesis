@@ -75,9 +75,7 @@ class Perspective():
             "biomass": []
         }
 
-        #calculate energy savings with taxes
         self.calculate_savings()
-        #total savings per year
         self.calculate_annual_savings()
         
         self.calculate_residual_value()
@@ -202,19 +200,26 @@ class Perspective():
     def construct_benefits_df(self):
         for item in self.selected_benefits:
             if item == 'energy_savings':
+                my_rounded_list = [ round(elem, 2) for elem in self.savings_per_year_taxable ]
+                self.savings_per_year_taxable = my_rounded_list
                 self.benefits['Energy savings'] = self.savings_per_year_taxable
                 continue
             if self.subsidy.subsidy_rate > 0 and item == 'tax_depreciation':
+                my_rounded_list = [ round(elem, 2) for elem in self.tax_depreciation_per_year ]
+                self.tax_depreciation_per_year = my_rounded_list
                 self.benefits['Benefit from Tax Depreciation'] = self.tax_depreciation_per_year
                 continue
             if item == 'maintenance':
                 val = self.get_benefit("maintenance")
-                #print(val)
                 maintenance = []
                 for year in range(self.analysis_period):
                     maintenance.append(val)
+                my_rounded_list = [ round(elem, 2) for elem in maintenance]
+                maintenance = my_rounded_list
                 self.benefits['Maintenance'] = maintenance
             if item == 'residual_value':
+                my_rounded_list = [ round(elem, 2) for elem in self.residual_value]
+                self.residual_value = my_rounded_list
                 self.benefits['Residual Value'] = self.residual_value
                 continue
         flow = []
@@ -222,18 +227,23 @@ class Perspective():
         self.pure_cash_flow = sum_benefits
         for year in range(self.analysis_period):
             flow.append(sum_benefits[year]/(1.0 + self.discount_rate)**year)
+        my_rounded_list = [ round(elem, 2) for elem in flow]
+        flow = my_rounded_list
         self.benefits['Discounted Cash Flow'] = flow
 
     def construct_cost_df(self):
         for item in self.selected_costs:
             if item == 'equipment':
+                my_rounded_list = [ round(elem, 2) for elem in self.equipment_cost ]    
+                self.equipment_cost = my_rounded_list          
                 self.costs['Equipment Cost'] = self.equipment_cost
         flow = []
         sum_costs = self.costs.sum(axis=1)
         for year in range(self.analysis_period):
             self.pure_cash_flow[year] = self.pure_cash_flow[year] - sum_costs[year]
             flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
-        self.costs['Discounted Cash Flow'] = flow
+        my_rounded_list = [ round(elem, 2) for elem in flow ]
+        self.costs['Discounted Cash Flow'] = my_rounded_list
 
 
     def calculate_avg_ratios(self):

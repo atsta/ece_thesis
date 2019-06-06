@@ -83,6 +83,7 @@ def main():
     esco_actor = financial_mechanism.Esco(measure_sample, test_per.savings_per_year_taxable, 0, "profit", 0.35, "benefit_share", 0.06, 0.8, 0.7, 8, esco_loan)
 
     p =  perspective.Perspective(measure_sample, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, 0.05, sub, loan, esco_actor, tax)
-
+    print(p.benefits)
+    print(p.costs)
 if __name__ == "__main__":
     main()

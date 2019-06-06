@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 
+
 class Subsidy():
     def __init__(self, measure, subsidy_rate):
         self.measure = measure
@@ -9,6 +10,8 @@ class Subsidy():
         self.state_cost = 0
 
         self.state_cost = self.measure['cost']*self.subsidy_rate*1.24
+        cost = round(self.state_cost, 2)
+        self.state_cost = cost
 
 
 class Tax_depreciation():
@@ -146,7 +149,8 @@ class Esco():
                 esco_savings.append(self.benefit_share_rate*self.energy_savings[year])
             else:
                 esco_savings.append(0)
-        self.benefits['Energy savings'] = esco_savings
+        rounded_savings = [ round(elem, 2) for elem in esco_savings ]
+        self.benefits['Energy savings'] = rounded_savings
         flow = []
         self.pure_discounted_cash_flow = esco_savings
         for year in range(len(self.energy_savings)):
@@ -155,7 +159,8 @@ class Esco():
             else:
                 self.pure_discounted_cash_flow.append(0)
                 flow.append(0)
-        self.benefits['Discounted Cash Flow'] = flow
+        rounded_flow = [ round(elem, 2) for elem in flow ]
+        self.benefits['Discounted Cash Flow'] = rounded_flow
 
     def construct_cost_df(self):
         initial_cost = []
@@ -176,13 +181,15 @@ class Esco():
                         initial_cost.append(esco_loan.interest_rate[year]/1.24 + esco_loan.interest_paid[year])
                     else:
                         initial_cost.append(0)
-        self.costs['Equipment Cost'] = initial_cost
+        rounded_cost = [ round(elem, 2) for elem in initial_cost ]
+        self.costs['Equipment Cost'] = rounded_cost
         flow = []
         sum_costs = self.costs.sum(axis=1)
         for year in range(len(self.energy_savings)):
             self.pure_discounted_cash_flow[year] = self.pure_discounted_cash_flow[year] - sum_costs[year]
             flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
-        self.costs['Discounted Cash Flow'] = flow
+        rounded_flow = [ round(elem, 2) for elem in flow ]
+        self.costs['Discounted Cash Flow'] = rounded_flow
 
     def calculate_simplePBP(self):
         pbp = 1 
@@ -194,14 +201,20 @@ class Esco():
 
     def calculate_discountedPBP(self):
         dpbp = float(np.log((self.pbp*(1+self.discount_rate))*(float((1 + self.avg_ratios))/(1+self.discount_rate)-1)+1))/np.log(float(1 + self.avg_ratios)/(1+self.discount_rate))
+        rounded_dpbp = round(dpbp, 2)
+        dpbp = rounded_dpbp
         return dpbp
 
     def get_cost_share(self):
         self.cost_share_rate = self.sum_costs/self.costs['Equipment Cost'].sum() 
+        rounded_rate = round(self.cost_share_rate, 2)
+        self.cost_share_rate = rounded_rate
         print(self.cost_share_rate)
     
     def get_benefit_share(self):
         self.benefit_share_rate = self.sum_benefits/self.benefits['Energy savings'].sum()
+        rounded_rate = round(self.benefit_share_rate, 2)
+        self.benefit_share_rate = rounded_rate
         print(self.benefit_share_rate)
 
     def calculate_flow_from_pbp(self):
