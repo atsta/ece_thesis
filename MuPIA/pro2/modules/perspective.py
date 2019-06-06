@@ -9,6 +9,8 @@ import psycopg2.extras
 import numpy as np
 import pandas as pd
 
+from financial_mechanism import Loan
+
 
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
 # get a connection with energy db
@@ -86,7 +88,7 @@ class Perspective():
 
         self.equipment_cost = []
         self.calculate_equipment_cost()
-        Perspective.logistic_cost = self.logistic_cost_without_taxes*1.24
+        self.logistic_cost_with_taxes = self.logistic_cost_without_taxes*1.24
 
         self.construct_benefits_df()
         self.construct_cost_df()
@@ -96,29 +98,41 @@ class Perspective():
 
 
     def calculate_equipment_cost(self):
+        if self.esco.cost_share_rate > 0 : 
+            loan_fund = (1-self.esco.cost_share_rate)*self.loan.loan_fund/self.loan.loan_rate
+            new_loan = Loan(loan_fund, self.loan.loan_rate, self.loan.annual_interest, self.loan.subsidized_interest, self.loan.loan_period, self.loan.grace_period)
         for year in range(self.analysis_period):
             if year == 0:
                 if self.loan.loan_fund > 0:
-                    self.equipment_cost.append(self.loan.own_fund)
+                    #without taxes
+                    if self.esco.cost_share_rate > 0 : 
+                        self.equipment_cost.append(new_loan.own_fund/1.24)
+                    else:
+                        self.equipment_cost.append(self.loan.own_fund/1.24)
                 else:
                     self.equipment_cost.append(self.logistic_cost_without_taxes)
             elif year == self.measure['lifetime']:
                 if self.loan.loan_fund > 0:
-                    if year < self.loan.period+1:
-                        self.equipment_cost.append(self.logistic_cost_without_taxes + self.loan.interest_rate[year]/1.24 + self.loan.interest_paid[year])
+                    if year < self.loan.loan_period+1:
+                        if self.esco.cost_share_rate > 0 : 
+                            self.equipment_cost.append(self.logistic_cost_without_taxes + new_loan.interest_rate[year]/1.24 + new_loan.interest_paid[year])
+                        else:
+                            self.equipment_cost.append(self.logistic_cost_without_taxes + self.loan.interest_rate[year]/1.24 + self.loan.interest_paid[year])
                     else:
                         self.equipment_cost.append(self.logistic_cost_without_taxes)
                 else:
                     self.equipment_cost.append(self.logistic_cost_without_taxes)
             else:
                 if self.loan.loan_fund > 0:
-                    if year < self.loan.period+1:
-                        self.equipment_cost.append(self.loan.interest_rate[year]/1.24 + self.loan.interest_paid[year])
+                    if year < self.loan.loan_period+1:
+                        if self.esco.cost_share_rate > 0:
+                            self.equipment_cost.append(new_loan.interest_rate[year]/1.24 + new_loan.interest_paid[year])
+                        else:
+                            self.equipment_cost.append(self.loan.interest_rate[year]/1.24 + self.loan.interest_paid[year])
                     else:
                         self.equipment_cost.append(0)
                 else:
                     self.equipment_cost.append(0)
-        #print(self.equipment_cost)
 
     def calculate_savings(self):
         self.energy_savings_with_taxes['electricity'].append(self.energy_conservation["electricity"]*float(self.energy_price['electricity']))
@@ -126,7 +140,6 @@ class Perspective():
         self.energy_savings_with_taxes['motor_gasoline'].append(self.energy_conservation["motor_gasoline"]*float(self.energy_price['motor_gasoline']))
         self.energy_savings_with_taxes['natural_gas'].append(self.energy_conservation["natural_gas"]*float(self.energy_price['natural_gas']))
         self.energy_savings_with_taxes['biomass'].append(self.energy_conservation["biomass"]*float(self.energy_price['biomass']))
-        #print(self.energy_savings_with_taxes)
         
         for year in range(1, self.analysis_period):
             self.energy_savings_with_taxes['electricity'].append(self.energy_savings_with_taxes['electricity'][year-1]*float((1+self.energy_price_growth_rate['electricity'])))
@@ -137,40 +150,35 @@ class Perspective():
 
     def calculate_annual_savings(self):
         savings_sum = sum(self.energy_savings_with_taxes[k][0] for k in self.energy_conservation)
-        if self.esco.benefit_share ==0 :
-            Perspective.savings_per_year_taxable.append(savings_sum)
+        if self.esco.benefit_share_rate == 0 :
+            self.savings_per_year_taxable.append(savings_sum)
         else: 
-            Perspective.savings_per_year_taxable.append((1-self.esco.benefit_share)*savings_sum)
+            self.savings_per_year_taxable.append((1-self.esco.benefit_share_rate)*savings_sum)
 
         for year in range(1, self.analysis_period):
             savings_sum = sum(self.energy_savings_with_taxes[k][year] for k in self.energy_conservation)
-            if self.esco.benefit_share ==0 or year >= self.esco.period:
-                Perspective.savings_per_year_taxable.append(savings_sum)
+            if self.esco.benefit_share_rate == 0 or year >= self.esco.contract_period:
+                self.savings_per_year_taxable.append(savings_sum)
             else: 
-                Perspective.savings_per_year_taxable.append((1-self.esco.benefit_share)*savings_sum)            
-        #print(Perspective.savings_per_year_taxable)
+                self.savings_per_year_taxable.append((1-self.esco.benefit_share_rate)*savings_sum)            
 
     
     def calculate_residual_value(self):
         self.logistic_cost_without_taxes = self.measure['cost']*(1-self.subsidy.subsidy_rate)
         for year in range(self.analysis_period):
             if year == self.analysis_period -1:
-                Perspective.residual_value.append((2*self.measure['lifetime']-self.analysis_period)*self.logistic_cost_without_taxes*1.24/self.measure['lifetime'])
+                self.residual_value.append((2*self.measure['lifetime']-self.analysis_period)*self.logistic_cost_without_taxes*1.24/self.measure['lifetime'])
             else: 
-                Perspective.residual_value.append(0)
+                self.residual_value.append(0)
 
     def calculate_tax_depreciation(self):
         for year in range(self.analysis_period):
             if year + 1 <= self.tax_depreciation.tax_lifetime:
                 self.tax_depreciation_per_year.append(self.logistic_cost_without_taxes*self.tax_depreciation.tax_depreciation_rate*self.tax_depreciation.tax_rate)
-                #self.benefits['Tax depreciation'][year] = self.logistic_cost_without_taxes*self.tax_depreciation*decimal.Decimal(0.25)
             elif year + 1 - self.measure['lifetime'] > 0 and year + 1 - self.measure['lifetime'] <= self.tax_depreciation.tax_lifetime:
                 self.tax_depreciation_per_year.append(self.logistic_cost_without_taxes*self.tax_depreciation.tax_depreciation_rate*self.tax_depreciation.tax_rate)
-                #self.benefits['Tax depreciation'][year] = self.logistic_cost_without_taxes*self.tax_depreciation*decimal.Decimal(0.25)
             else:
                 self.tax_depreciation_per_year.append(0)
-                #self.benefits['Tax depreciation'][year] = 0
-        #print(self.tax_depreciation_per_year)
 
     def get_benefit(self, par):
         try: 
@@ -194,12 +202,10 @@ class Perspective():
     def construct_benefits_df(self):
         for item in self.selected_benefits:
             if item == 'energy_savings':
-                #print(len(Perspective.savings_per_year_taxable))
-                Perspective.benefits['Energy savings'] = Perspective.savings_per_year_taxable
-
+                self.benefits['Energy savings'] = self.savings_per_year_taxable
                 continue
             if self.subsidy.subsidy_rate > 0 and item == 'tax_depreciation':
-                Perspective.benefits['Benefit from Tax Depreciation'] = self.tax_depreciation_per_year
+                self.benefits['Benefit from Tax Depreciation'] = self.tax_depreciation_per_year
                 continue
             if item == 'maintenance':
                 val = self.get_benefit("maintenance")
@@ -207,33 +213,27 @@ class Perspective():
                 maintenance = []
                 for year in range(self.analysis_period):
                     maintenance.append(val)
-                Perspective.benefits['Maintenance'] = maintenance
+                self.benefits['Maintenance'] = maintenance
             if item == 'residual_value':
-                Perspective.benefits['Residual Value'] = Perspective.residual_value
+                self.benefits['Residual Value'] = self.residual_value
                 continue
         flow = []
-        sum_benefits = Perspective.benefits.sum(axis=1)
-        Perspective.pure_cash_flow = sum_benefits
-        #print(Perspective.pure_cash_flow)
+        sum_benefits = self.benefits.sum(axis=1)
+        self.pure_cash_flow = sum_benefits
         for year in range(self.analysis_period):
             flow.append(sum_benefits[year]/(1.0 + self.discount_rate)**year)
-        Perspective.benefits['Discounted Cash Flow'] = flow
-        #print(flow)
-        #print(Perspective.benefits)
+        self.benefits['Discounted Cash Flow'] = flow
 
     def construct_cost_df(self):
         for item in self.selected_costs:
             if item == 'equipment':
-                Perspective.costs['Equipment Cost'] = self.equipment_cost
-            # if loan add special column gia tis doseis
-            
+                self.costs['Equipment Cost'] = self.equipment_cost
         flow = []
-        sum_costs = Perspective.costs.sum(axis=1)
+        sum_costs = self.costs.sum(axis=1)
         for year in range(self.analysis_period):
-            Perspective.pure_cash_flow[year] = Perspective.pure_cash_flow[year] - sum_costs[year]
+            self.pure_cash_flow[year] = self.pure_cash_flow[year] - sum_costs[year]
             flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
-        Perspective.costs['Discounted Cash Flow'] = flow
-        #print(Perspective.costs)
+        self.costs['Discounted Cash Flow'] = flow
 
 
     def calculate_avg_ratios(self):
@@ -254,51 +254,28 @@ class Perspective():
         if self.energy_conservation["biomass"] > 0:
             num_ratios = num_ratios +1 
             sum_ratios = sum_ratios + self.energy_price_growth_rate["biomass"]
-        Perspective.avg_ratios = sum_ratios/num_ratios 
+        self.avg_ratios = sum_ratios/num_ratios 
 
     def calculate_simplePBP(self):
         pbp = 1 
-        diff = Perspective.pure_cash_flow[0]
+        diff = self.pure_cash_flow[0]
         while diff < 0 and pbp < self.analysis_period-1:
-            diff = diff + Perspective.pure_cash_flow[pbp]
+            diff = diff + self.pure_cash_flow[pbp]
             pbp = pbp +1 
         return pbp
 
     def calculate_discountedPBP(self):
         self.calculate_avg_ratios()
-        dpbp = float(np.log((Perspective.pbp*(1+self.discount_rate))*(float((1 + Perspective.avg_ratios))/(1+self.discount_rate)-1)+1))/np.log(float(1 + Perspective.avg_ratios)/(1+self.discount_rate))
+        dpbp = float(np.log((self.pbp*(1+self.discount_rate))*(float((1 + self.avg_ratios))/(1+self.discount_rate)-1)+1))/np.log(float(1 + self.avg_ratios)/(1+self.discount_rate))
         return dpbp
 
     def measure_judgment(self):
-        Perspective.cost_pv = Perspective.costs[['Discounted Cash Flow']].sum()
-        Perspective.benefit_pv = Perspective.benefits[['Discounted Cash Flow']].sum()
-        #print(Perspective.benefit_pv)
-
-        Perspective.npv = Perspective.benefit_pv - Perspective.cost_pv
-        Perspective.b_to_c = Perspective.benefit_pv/Perspective.cost_pv
-        Perspective.irr =  irr = np.irr(Perspective.pure_cash_flow)
-        Perspective.pbp = self.calculate_simplePBP()
-        Perspective.dpbp = self.calculate_discountedPBP()
+        self.cost_pv = self.costs[['Discounted Cash Flow']].sum()
+        self.benefit_pv = self.benefits[['Discounted Cash Flow']].sum()
+        self.npv = self.benefit_pv - self.cost_pv
+        self.b_to_c = self.benefit_pv/self.cost_pv
+        self.irr =  irr = np.irr(self.pure_cash_flow)
+        self.pbp = self.calculate_simplePBP()
+        self.dpbp = self.calculate_discountedPBP()
     
-    def clear(self):
-        # να υπολογιστει
-        Perspective.savings_per_year_nontaxable = []
-        # να μπουν σε σελφ
-        Perspective.savings_per_year_taxable = []
-        Perspective.residual_value = []
-        
-        #για πειμπακ
-        Perspective.avg_ratios= 0
-
-        Perspective.costs = pd.DataFrame([])
-        Perspective.benefits = pd.DataFrame([])
-
-        Perspective.logistic_cost = 0
- 
-        Perspective.cost_pv = 0.0 
-        Perspective.benefit_pv = 0.0
-        Perspective.npv = 0.0
-        Perspective.b_to_c = 0.0
-        Perspective.irr = 0.0
-        Perspective.pbp = 0.0
-        Perspective.dpbp = 0.0
+    

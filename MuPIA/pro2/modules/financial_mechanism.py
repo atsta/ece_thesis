@@ -201,8 +201,8 @@ class Esco():
         print(self.cost_share_rate)
     
     def get_benefit_share(self):
-        self.benefit_share = self.sum_benefits/self.benefits['Energy savings'].sum()
-        print(self.benefit_share)
+        self.benefit_share_rate = self.sum_benefits/self.benefits['Energy savings'].sum()
+        print(self.benefit_share_rate)
 
     def calculate_flow_from_pbp(self):
         pbp = int(self.criterion_value)
