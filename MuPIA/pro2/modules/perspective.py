@@ -66,7 +66,7 @@ class Perspective():
         self.pbp = 0.0
         self.dpbp = 0.0
           
-        self.logistic_cost_without_taxes = self.measure['cost']
+        self.logistic_cost_without_taxes = self.measure['cost']*(1-self.subsidy.subsidy_rate)*(1-self.esco.cost_share_rate)
         self.energy_savings_with_taxes = {
             "electricity": [],
             "diesel_oil": [],
@@ -162,7 +162,6 @@ class Perspective():
 
     
     def calculate_residual_value(self):
-        self.logistic_cost_without_taxes = self.measure['cost']*(1-self.subsidy.subsidy_rate)
         for year in range(self.analysis_period):
             if year == self.analysis_period -1:
                 self.residual_value.append((2*self.measure['lifetime']-self.analysis_period)*self.logistic_cost_without_taxes*1.24/self.measure['lifetime'])
@@ -280,8 +279,8 @@ class Perspective():
         return dpbp
 
     def measure_judgment(self):
-        self.cost_pv = self.costs[['Discounted Cash Flow']].sum()
-        self.benefit_pv = self.benefits[['Discounted Cash Flow']].sum()
+        self.cost_pv = self.costs['Discounted Cash Flow'].sum()
+        self.benefit_pv = self.benefits['Discounted Cash Flow'].sum()
         self.npv = self.benefit_pv - self.cost_pv
         self.b_to_c = self.benefit_pv/self.cost_pv
         self.irr =  irr = np.irr(self.pure_cash_flow)

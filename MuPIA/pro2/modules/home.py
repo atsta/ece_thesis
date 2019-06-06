@@ -8,6 +8,8 @@ import financial_mechanism
 import energy_measure
 
 import decimal 
+import matplotlib.pyplot as plt
+import numpy as np
 
 def main():
 #temporarily tertiary prices
@@ -80,10 +82,26 @@ def main():
 
     test_per = perspective.Perspective(measure_sample, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, 0.05, sub, loan, test_esco, tax)
 
-    esco_actor = financial_mechanism.Esco(measure_sample, test_per.savings_per_year_taxable, 0, "profit", 0.35, "benefit_share", 0.06, 0.8, 0.7, 8, esco_loan)
+    esco_actor = financial_mechanism.Esco(measure_sample, test_per.savings_per_year_taxable, 0, "profiκκt", 0.35, "benefiππt_share", 0.06, 0.8, 0.7, 8, esco_loan)
 
     p =  perspective.Perspective(measure_sample, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, 0.05, sub, loan, esco_actor, tax)
     print(p.benefits)
     print(p.costs)
+    #print(p.pure_cash_flow)
+
+    h = plt.hist(np.random.triangular(0.02, 0.05, 0.1, 10000), bins=25, density=True)
+    result_b_to_c = []
+    
+    #for discount_rate in h[1]:
+    #    p = perspective.Perspective(measure_sample, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, discount_rate, sub, loan, esco_actor, tax)
+    #    result_b_to_c.append(p.b_to_c)
+    #result_b_to_c.pop()
+    
+    
+    #print(h[0])
+    #print(h[1])
+    #print(result_b_to_c)
+    #print(len(result_b_to_c))
+
 if __name__ == "__main__":
     main()
