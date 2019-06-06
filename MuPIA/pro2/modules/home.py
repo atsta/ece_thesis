@@ -70,6 +70,7 @@ def main():
         'category': "household"
     }
     sub = financial_mechanism.Subsidy(measure_sample, 0.4)
+    print(sub.state_cost)
     tax = financial_mechanism.Tax_depreciation(0.25, 0.1, 10)
     #gia na doso logistic cost daneiou elegho an ehei parei epidotisi
     if sub.subsidy_rate > 0:
@@ -77,32 +78,24 @@ def main():
     else:
         logistic_cost = measure_sample['cost']*1.24
 
-    fake_loan = financial_mechanism.Loan(0,0,0,0,0,0)
-
-    esco = financial_mechanism.Esco(measure_sample, [], 0, "irr", 0, "metavoli_periodou", 0, 0, 0, 0, fake_loan)
-
-    fake_loan.clear()
-
-    #(logistic_cost, loan_rate, annual_interest, subsidized_interest, loan_period, grace_period):
     loan = financial_mechanism.Loan(logistic_cost, 0.5, 0.08, 0.024, 3, 0)
-    
-    psub =  perspective.Perspective(measure_sample, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, 0.05, sub, loan, esco, tax)
-    
-    esco.clear()
 
     esco_took_loan = 1
     if esco_took_loan == 0:
         esco_loan = financial_mechanism.Loan(0,0,0,0,0,0)
     else: 
-        cost_share = 0.8
-        cost_esco = cost_share*measure_sample['cost']*1.24
-        #print(cost_esco)
-        loan.clear()
-        esco_loan = financial_mechanism.Loan(cost_esco, 0.5, 0.08, 0.024, 10, 0)
+        cost_esco = measure_sample['cost']*1.24
 
-    esco_actor = financial_mechanism.Esco(measure_sample, psub.benefits['Energy savings'], psub.avg_ratios, "profit", 0.34, "benefit_share", 0.06, 0.8, 0.7, 8, esco_loan)
-    esco_actor.clear()
-    psub.clear()
+        esco_loan = financial_mechanism.Loan(0.8*cost_esco, 0.5, 0.08, 0.024, 10, 0)
+        #print(esco_loan.interest_paid)
+        #print(esco_loan.interest_rate)
+    savings = [7369.68, 7521.68,	7676.93,	7835.51,	7997.49,	8162.93,	8331.93,	8504.56,	8680.90,	8861.02,	9045.03,	9232.99,	9425.01,	9621.17,	9821.56,	10026.27	,10235.42,	10449.08	,10667.37,	10890.38	,11118.23	,11351.02,	11588.86,	11831.87	,12080.16]
+
+
+    esco_actor = financial_mechanism.Esco(measure_sample, savings, 0, "npv", 0.082, "benefit_share", 0.06, 0.8, 0.7, 8, esco_loan)
+    #print(esco_actor.costs)
+    #print(esco_actor.benefits)
+    
     
     #loan = financial_mechanism.Loan(logistic_cost, 0.5, 0.08, 0.024, 3, 0)
 

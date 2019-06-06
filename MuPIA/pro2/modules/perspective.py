@@ -15,40 +15,9 @@ conn_string = "host='localhost' dbname='energy_db' user='postgres' password='454
 conn = psycopg2.connect(conn_string)
 
 
+
 class Perspective():   
-    # να υπολογιστει
-    savings_per_year_nontaxable = []
-    # να μπουν σε σελφ
-    savings_per_year_taxable = []
-    residual_value = []
     
-    #για πειμπακ
-    avg_ratios= 0
-
-    costs = pd.DataFrame([])
-    benefits = pd.DataFrame([])
-
-    logistic_cost = 0
-    """
-
-    Investment sustainability criteria:
-        PV κόστους
-        PV οφέλους
-        NPV
-        B/C ratio
-        IRR
-        Simple Payback period (years)
-        Discounted Payback period (years)
-
-    """
-    cost_pv = 0.0 
-    benefit_pv = 0.0
-    npv = 0.0
-    b_to_c = 0.0
-    irr = 0.0
-    pbp = 0.0
-    dpbp = 0.0
-
     def __init__(self, measure, energy_conservation, energy_price, energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, subsidy, loan, esco, tax_depreciation):
         self.measure = measure
         self.energy_conservation = energy_conservation
@@ -62,6 +31,38 @@ class Perspective():
         self.loan = loan 
         self.esco = esco 
         self.tax_depreciation = tax_depreciation
+
+        # να υπολογιστει
+        self.savings_per_year_nontaxable = []
+
+        self.savings_per_year_taxable = []
+        self.residual_value = []
+        
+        self.avg_ratios= 0
+
+        self.costs = pd.DataFrame([])
+        self.benefits = pd.DataFrame([])
+
+        self.logistic_cost = 0
+        """
+
+        Investment sustainability criteria:
+            PV κόστους
+            PV οφέλους
+            NPV
+            B/C ratio
+            IRR
+            Simple Payback period (years)
+            Discounted Payback period (years)
+
+        """
+        self.cost_pv = 0.0 
+        self.benefit_pv = 0.0
+        self.npv = 0.0
+        self.b_to_c = 0.0
+        self.irr = 0.0
+        self.pbp = 0.0
+        self.dpbp = 0.0
           
         self.logistic_cost_without_taxes = self.measure['cost']
         self.energy_savings_with_taxes = {
