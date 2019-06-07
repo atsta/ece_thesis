@@ -87,10 +87,13 @@ def main():
     p =  perspective.Perspective(measure_sample, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, 0.05, sub, loan, esco_actor, tax)
     print(p.benefits)
     print(p.costs)
-    #print(p.pure_cash_flow)
+    print(p.pure_cash_flow)
+    print(p.b_to_c)
+    print(p.npv)
+    print(p.irr)
 
-    h = plt.hist(np.random.triangular(0.02, 0.05, 0.1, 10000), bins=25, density=True)
-    result_b_to_c = []
+    #h = plt.hist(np.random.triangular(0.02, 0.05, 0.1, 1000000), bins=100, density=True)    
+    #result_b_to_c = []
     
     #for discount_rate in h[1]:
     #    p = perspective.Perspective(measure_sample, energy_conservation, energy_price_with_taxes, energy_price_growth_rate, selected_costs, selected_benefits, 25, discount_rate, sub, loan, esco_actor, tax)
@@ -101,7 +104,7 @@ def main():
     #print(h[0])
     #print(h[1])
     #print(result_b_to_c)
-    #print(len(result_b_to_c))
+    #print(len(result_b_to_c), len(h[0]))
 
 if __name__ == "__main__":
     main()

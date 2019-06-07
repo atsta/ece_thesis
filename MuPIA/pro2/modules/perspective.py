@@ -9,14 +9,75 @@ import psycopg2.extras
 import numpy as np
 import pandas as pd
 
-from financial_mechanism import Loan
-
-
 conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
 # get a connection with energy db
 conn = psycopg2.connect(conn_string)
 
+class Loan(): 
+    def __init__(self, logistic_cost, loan_rate, annual_interest, subsidized_interest, loan_period, grace_period):
+        self.logistic_cost = logistic_cost #with taxes
+        self.loan_rate = loan_rate
+        self.annual_interest = annual_interest
+        self.subsidized_interest = subsidized_interest
+        self.loan_period = loan_period
+        self.grace_period = grace_period
 
+        self.own_funds_rate = 1 - self.loan_rate
+        self.own_fund = self.logistic_cost*self.own_funds_rate
+        self.loan_fund = self.loan_rate*self.logistic_cost
+
+        if self.loan_period == 0:
+            self.calculate_loan_period()
+
+        self.grace_period_tokos = self.annual_interest*self.grace_period*self.loan_fund
+        self.repayment_amount = self.loan_fund + self.grace_period_tokos
+
+        #tok/ki dosi ana etos danismou
+        self.interest_rate_instalment = []
+        self.interest_rate_instalment.append(0)
+
+        #xreolisio ana etos danismou
+        self.interest_rate = []
+        self.interest_rate.append(0)
+
+        #tokos
+        self.interest = []
+        self.interest.append(0)
+
+        #epidotisi tokou 
+        self.interest_subsidy = []
+        self.interest_subsidy.append(0)
+
+        #tokos pliroteos 
+        self.interest_paid = []
+        self.interest_paid.append(0)
+
+        #aneksoflito ipolipo
+        self.unpaid = []
+        self.unpaid.append(self.repayment_amount)
+        
+        sum_xreolisio = 0
+
+        for year in range(1, self.loan_period+1):
+            self.interest_rate_instalment.append(-np.pmt(self.annual_interest, self.loan_period, self.repayment_amount, 0))
+            self.interest_rate.append(-np.ppmt(self.annual_interest, year, self.loan_period, self.repayment_amount))
+            self.interest.append(self.interest_rate_instalment[year] - self.interest_rate[year])
+            if year == 1:
+                self.interest_subsidy.append(self.repayment_amount*self.subsidized_interest)
+            else:
+                sum_xreolisio = sum_xreolisio + self.interest_rate[year-1]
+                endiameso = self.repayment_amount - sum_xreolisio
+                self.interest_subsidy.append(endiameso*self.subsidized_interest)
+            
+            self.interest_paid.append(self.interest[year] - self.interest_subsidy[year])
+            self.unpaid.append(self.unpaid[year-1] - self.interest_rate[year])
+
+    def calculate_loan_period(self):
+        if self.loan_fund < 15000: 
+            self.loan_period = 3
+        else: 
+            self.loan_period = 10
+    
 
 class Perspective():   
     
@@ -46,6 +107,7 @@ class Perspective():
         self.benefits = pd.DataFrame([])
 
         self.logistic_cost = 0
+        self.pure_cash_flow = []
         """
 
         Investment sustainability criteria:
@@ -223,7 +285,8 @@ class Perspective():
                 continue
         flow = []
         sum_benefits = self.benefits.sum(axis=1)
-        self.pure_cash_flow = sum_benefits
+        for year in range(len(sum_benefits)):
+            self.pure_cash_flow.append(sum_benefits[year])
         for year in range(self.analysis_period):
             flow.append(sum_benefits[year]/(1.0 + self.discount_rate)**year)
         my_rounded_list = [ round(elem, 2) for elem in flow]
@@ -279,12 +342,12 @@ class Perspective():
         return dpbp
 
     def measure_judgment(self):
-        self.cost_pv = self.costs['Discounted Cash Flow'].sum()
-        self.benefit_pv = self.benefits['Discounted Cash Flow'].sum()
-        self.npv = self.benefit_pv - self.cost_pv
-        self.b_to_c = self.benefit_pv/self.cost_pv
-        self.irr =  irr = np.irr(self.pure_cash_flow)
-        self.pbp = self.calculate_simplePBP()
-        self.dpbp = self.calculate_discountedPBP()
+        self.cost_pv = round(self.costs['Discounted Cash Flow'].sum(), 2)
+        self.benefit_pv = round(self.benefits['Discounted Cash Flow'].sum(),2)
+        self.npv = round(self.benefit_pv - self.cost_pv, 2)
+        self.b_to_c = round(self.benefit_pv/self.cost_pv, 2)
+        self.irr = round(np.irr(self.pure_cash_flow), 2)
+        self.pbp = round(self.calculate_simplePBP(), 2)
+        self.dpbp = round(self.calculate_discountedPBP(), 2)
     
     
