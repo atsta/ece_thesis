@@ -5,8 +5,7 @@ from . import forms
 
 from app2.models import Perspective, Esco, Measure, Social, Energy_Conservation, Costs, Benefits, Portfolio
 
-from modules import energy_measure, perspective, social_investment_analysis
-from modules import financial_mechanism
+from modules import energy_measure, financial_mechanism, perspective, social_investment_analysis
 
 import string
 import random
@@ -23,17 +22,13 @@ def index(request):
 def measure(request):
     return render(request,'app2/measure.html')
 
-def actor(request):
-    return render(request,'app2/actor_choice.html')
-
-
 def analysis(request):
         form = NewMeasureForm()
         if request.method == "POST":
                 form = NewMeasureForm(request.POST)
                 if form.is_valid():
                         measure = form.save(commit=True)
-                        e = Energy_Conservation(measure=measure, biomass3=13)
+                        e = Energy_Conservation(measure=measure, biomass3=1300, electricity3 =300, diesel_oil3=15000, motor_gasoline3 = 1000)
                         e.save()
                         c = Costs(measure=measure, equipment=measure.cost)
                         c.save()
@@ -44,64 +39,18 @@ def analysis(request):
                         print('Error: Invalid form')
                         
         return render(request, 'app2/analysis.html', {'form': form})
-        
 
-def measure_search_results_investment(request):
-        article = request.POST.get('article')
-        selected_category = request.POST.get('category')
-        selected_type = request.POST.get('type')
+#social analysis views 
 
-        results = Measure.objects.filter(measure_type=selected_type)
-        #, category=selected_category)
-        #print(article)
-        request.session['category'] = selected_category
-        request.session['type'] = selected_type
-        request.session['article'] = article
-
-        return render(request, 'app2/actor_choice.html', {'results': results, 
-                                                        'selected_category': selected_category, 
-                                                        'selected_type': selected_type})
 def measure_search_results(request):
         selected_category = request.POST.get('category')
         selected_type = request.POST.get('type')
 
-        results = Measure.objects.filter(measure_type=selected_type)
-        #, category=selected_category)
+        results = Measure.objects.filter(measure_type=selected_type, category=selected_category)
         
         return render(request, 'app2/measure.html', {'results': results, 
                                                         'selected_category': selected_category, 
                                                         'selected_type': selected_type})
-
-def grab_selected_results_investment(request):
-        selected = request.GET.getlist('measure')
-        #create an analysis instance for every selected measure
-        #create random names for every analysis instance
-        
-        #remove '\' from measure name
-        for i in range(len(selected)):
-                k = selected[i]
-                k = k[:-1]
-                selected[i] = k
-        #print(selected)
-        #op = Portfolio(name=id_generator(), genre ='social', analysis_pieces=[])
-        #op.save()
-        '''
-        for element in selected:
-                social[element] = id_generator()
-                hip = Measure.objects.get(name=element)
-                hop = Social(name=social[element], measure=hip)
-                op.analysis_pieces.append(social[element])
-                op.save()
-                hop.save()
-                
-        request.session['dictionary'] = social
-        request.session['list'] = selected
-        print(social)
-        '''
-        request.session['list'] = selected
-        print(selected)
-        return render(request, 'app2/investment_analysis.html', {'selected': selected})
-
 def grab_selected_results(request):
         selected = request.GET.getlist('measure')
         
@@ -113,7 +62,6 @@ def grab_selected_results(request):
                 k = selected[i]
                 k = k[:-1]
                 selected[i] = k
-        #print(selected)
         op = Portfolio(name=id_generator(), genre ='social', analysis_pieces=[])
         op.save()
         for element in selected:
@@ -132,39 +80,120 @@ def grab_selected_results(request):
 def choose_costs_and_benefits(request):
         selected = request.session['list']
         social = request.session['dictionary']
-        costs = {}
-        benefits = {}
+
         print(social)
-        
+        benefits = request.POST.getlist(benefit)
+        costs = request.POST.getlist(cost)
         for item in selected:
                 hip = Social.objects.get(name=social[item])
                 
                 #measure name0 -> benefit 
                 #measure name1 -> cost
                 benefit = "%s%s" % (item, "0")
-                benefits[item] = request.POST.getlist(benefit)
-                hip.benefits = benefits[item]
+                hip.benefits = benefits
                 
                 cost = "%s%s" % (item, "1")
-                costs[item] = request.POST.getlist(cost)
-                hip.costs = costs[item]
+                hip.costs = costs
+
                 hip.save()
         return render(request, 'app2/cba_params_and_results.html', {'costs': costs, 'benefits': benefits})
+
+def grab_params_and_give_results(request):
+        selected = request.session['list']
+        social = request.session['dictionary']
+
+        #print(selected)
+        chose_lifetime = request.POST.getlist('lifetime')
+        if chose_lifetime == []:
+                analysis_period = request.POST.get('analysis_period')
+        else:
+                #tbd, for every measure selected
+                analysis_period = 0
+        discount_rate = request.POST.get('discount_rate')
+
+        for item in selected:
+                hip = Social.objects.get(name=social[item])
+                hip.discount_rate = discount_rate
+                hop = Measure.objects.get(name=item)
+                if analysis_period == 0:
+                        hip.analysis_period = hop.lifetime
+                else: 
+                        hip.analysis_period = analysis_period
+                hip.save()
+                energy_conservation = {
+                        "electricity": 0,
+                        "diesel_oil": 0,
+                        "motor_gasoline": 0, 
+                        "natural_gas": 0, 
+                        "biomass": 0
+                }
+                opa = Energy_Conservation.objects.get(measure=hop)
+
+                energy_conservation['electricity'] = opa.electricity3
+                energy_conservation['diesel_oil'] = opa.diesel_oil3
+                energy_conservation['motor_gasoline'] = opa.motor_gasoline3
+                energy_conservation['natural_gas'] = opa.natural_gas3
+                energy_conservation['biomass'] = opa.biomass3
+
+                externalities = []
+                for i in range(0, 25):
+                        externalities.insert(i, 2.11)
+                cost = hop.cost
+                lifetime = hop.lifetime
+                scba = social_investment_analysis.Social(cost, lifetime, externalities, energy_conservation)
+
+                hip.npv = scba.npv
+                hip.b_to_c = scba.b_to_c
+                hip.irr = scba.irr
+                hip.dpbp = scba.dpbp
+                hip.save()
+                
+        return render(request, 'app2/cba_params_and_results.html', {'analysis_period': analysis_period, 'discount_rate': discount_rate})
+
+#investment analysis views
+
+def actor(request):
+    return render(request,'app2/actor_choice.html')
+
+def measure_search_results_investment(request):
+        article = request.POST.get('article')
+        selected_category = request.POST.get('category')
+        selected_type = request.POST.get('type')
+
+        results = Measure.objects.filter(measure_type=selected_type, category=selected_category)
+        
+        request.session['category'] = selected_category
+        request.session['type'] = selected_type
+        request.session['article'] = article
+
+        return render(request, 'app2/actor_choice.html', {'results': results, 
+                                                        'selected_category': selected_category, 
+                                                        'selected_type': selected_type})
+
+
+def grab_selected_results_investment(request):
+        selected = request.GET.getlist('measure')
+        #create an analysis instance for every selected measure
+        #create random names for every analysis instance
+        
+        #remove '\' from measure name
+        for i in range(len(selected)):
+                k = selected[i]
+                k = k[:-1]
+                selected[i] = k
+
+        request.session['list'] = selected
+        print(selected)
+        return render(request, 'app2/investment_analysis.html', {'selected': selected})
 
 def choose_costs_and_benefits_investment(request):
         selected_category = request.session['category']
         selected_type = request.session['type']
         selected = request.session['list'] 
-        costs = {}
-        benefits = {}
-        for item in selected:                
-                #measure name0 -> benefit 
-                #measure name1 -> cost
-                benefit = "%s%s" % (item, "0")
-                benefits[item] = request.POST.getlist(benefit)
-                
-                cost = "%s%s" % (item, "1")
-                costs[item] = request.POST.getlist(cost)
+        
+        benefits = request.POST.getlist('benefit')
+        costs = request.POST.getlist('cost')
+        
         print(costs)
         print(benefits)        
         print(selected_category)
@@ -210,9 +239,6 @@ def grab_params_and_proceed(request):
                                         form1 = LoanForm() 
                                 if item == 'increase_factor':
                                         form2 = FactorForm()
-                                #if item == 'energy_contract':
-                                #        form1 = ContractForm()
-                                #        return render(request, 'app2/esco.html', {'form1': form1})
                        
                         return render(request, 'app2/investment_analysis_params.html', {'form': form, 'form1': form1, 'form2': form2, 'form3': form3})
 
@@ -250,8 +276,6 @@ def financial_mechanism_params(request):
                                         request.session['sr'] = subsidized_interest
                                         request.session['lp'] = loan_period
                                         request.session['gp'] = grace_period
-                                        #print(loan_period)
-                                #return render(request, 'app2/investment_analysis_results.html')
                 if item == 'increase_factor':
                         if request.method == "POST":
                                 form2 = FactorForm(request.POST)
@@ -260,7 +284,6 @@ def financial_mechanism_params(request):
                                         tax_lifetime = form2.cleaned_data["tax_lifetime"]
                                         request.session['tax_rate'] = depreciation_tax_rate  
                                         request.session['tax_lifetime'] = tax_lifetime
-                                        #print(tax_lifetime)
                 if item == 'subsidy':
                         if request.method == "POST":
                                 form3 = SubsidyForm(request.POST)
@@ -274,14 +297,12 @@ def financial_mechanism_params(request):
                 form1 = ContractForm()
                 return render(request, 'app2/esco.html', {'form1': form1})
 
-
 def esco_params(request):
         if request.method == "POST":
                 form1 = ContractForm(request.POST)
                 esco_loan = request.POST.get('took_loan')
                 print(esco_loan)
                 if form1.is_valid():
-                        #request.session['took_loan1'] = esco_loan
                         esco_disc_rate = form1.cleaned_data['discount_rate']
                         request.session['esco_disc_rate'] = esco_disc_rate
                         criterion = form1.cleaned_data['chosen_criterion']
@@ -329,7 +350,6 @@ def grab_esco_params(request):
                 if criterion == 'irr':
                         form2 = IrrInput(request.POST)
                         if form2.is_valid():
-                                #print("ok")
                                 esco_irr = form2.cleaned_data['irr']
                                 request.session['esco_irr'] = esco_irr
                 if criterion == 'spbp':
@@ -364,7 +384,6 @@ def grab_esco_params(request):
                                 benefit_share_rate = form3.cleaned_data['benefit_share_rate']
                                 request.session['esco_period'] = contract_period
                                 request.session['benefit_share'] = benefit_share_rate
-                
                 if took_loan == 'esco_loan':
                         form4 = EscoLoan(request.POST)
                         if form4.is_valid():
@@ -386,7 +405,6 @@ def investment_analysis_results(request):
         if chose_lifetime == []:
                 analysis_period = request.POST.get('analysis_period')
         else:
-                #tbd, for every measure selected
                 analysis_period = 0
         discount_rate = request.POST.get('discount_rate')
         discount_rate = float(discount_rate)/100
@@ -402,7 +420,6 @@ def investment_analysis_results(request):
         an = []
         if analysis_period == 0:
                 give_lifetime_as_period = 1
-        perloan = 0
 
         analysis_period = int(analysis_period)
         for item in selected_measures:
@@ -423,25 +440,21 @@ def investment_analysis_results(request):
                 hop.benefits = selected_benefits[item]
                 hop.costs = selected_costs[item]
                 hop.save()
+
                 sub = financial_mechanism.Subsidy(m.specs, 0.0)
                 tax = financial_mechanism.Tax_depreciation(0.0, 0.0, 0)
                 ln = financial_mechanism.Loan(0,0,0,0,0,0)
                 esco = financial_mechanism.Esco(m.specs, [], 0, " ",0, " ", 0, 0, 0, 0, ln)
-
                 for submech in mechanism:
                         if submech == 'subsidy':
                                 sub_rate = request.session['subsidy']
-                                sub.clear()
                                 sub = financial_mechanism.Subsidy(m.specs, sub_rate)
-                                #print(sub.subsidy_rate)
                         if submech == 'loan':
-                                perloan=1
                                 loan_rate = request.session['lr']
                                 annual_interest = request.session['ar'] 
                                 subsidized_interest = request.session['sr'] 
                                 loan_period = request.session['lp']
                                 grace_period = request.session['gp'] 
-                                ln.clear()
                                 for it in mechanism:
                                         if it == "subsidy":
                                                 sub_rate = request.session['subsidy']
@@ -450,27 +463,21 @@ def investment_analysis_results(request):
                                         else:
                                                 logistic_cost = measure_sample['cost']*1.24
                                 ln = financial_mechanism.Loan(logistic_cost, loan_rate, annual_interest, subsidized_interest, loan_period, grace_period)
-                                #print(ln.interest_paid)
                         if submech == 'increase_factor':
                                 depreciation_tax_rate  = request.session['tax_rate']  
                                 tax_lifetime =  request.session['tax_lifetime'] 
-                                tax.clear()
                                 tax = financial_mechanism.Tax_depreciation(0.25, depreciation_tax_rate, tax_lifetime)
-                                #print(tax.tax_lifetime)
                 for submech in mechanism:
                         if submech == 'energy_contract':
                                 per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs[item], selected_benefits[item], analysis_period, discount_rate, sub, ln, esco, tax)
                                 savings = per.benefits['Energy savings']
                                 avg_ratios = per.avg_ratios
-                                per.clear()
-                                esco.clear()
 
                                 esco_disc_rate = request.session['esco_disc_rate']
                                 criterion = request.session['esco_criterion'] 
                                 criterion_satisfaction = request.session['esco_criterion_satisfaction'] 
                                 took_loan = request.session['took_loan']
-                                if perloan == 1:
-                                        ln.clear()
+
                                 if took_loan == 'esco_loan':
                                         loan_rate = request.session['esco_lr'] 
                                         annual_rate = request.session['esco_ar']  
@@ -494,20 +501,14 @@ def investment_analysis_results(request):
                                         cost_esco_rate = request.session['cost_share']
                                         benefit_share_rate = request.session['benefit_share'] 
                                         esco = financial_mechanism.Esco(m.specs, savings, avg_ratios, criterion, cr_val, criterion_satisfaction, esco_disc_rate, cost_esco_rate, benefit_share_rate, 0, esco_loan)
-                                        esco_loan.clear()
                                 if criterion_satisfaction == 'benefit_share':
                                         cost_esco_rate = request.session['cost_share']
                                         contract_period = request.session['esco_period']
-                                        esco = financial_mechanism.Esco(m.specs, savings, avg_ratios, criterion, cr_val, criterion_satisfaction, esco_disc_rate, cost_esco_rate, 1,contract_period , esco_loan)
-                                        esco_loan.clear()
+                                        esco = financial_mechanism.Esco(m.specs, savings, int(avg_ratios), criterion, int(cr_val), criterion_satisfaction, float(esco_disc_rate), float(cost_esco_rate), 1,int(contract_period) , esco_loan)
                                 if criterion_satisfaction == 'cost_esco':
                                         contract_period = request.session['esco_period'] 
                                         benefit_share_rate = request.session['benefit_share'] 
                                         esco= financial_mechanism.Esco(m.specs, savings, avg_ratios, criterion, cr_val, criterion_satisfaction, esco_disc_rate, 1, benefit_share_rate, contract_period, esco_loan)
-                                        esco_loan.clear()
-                                if perloan == 1:
-                                        ln = financial_mechanism.Loan(logistic_cost, loan_rate, annual_interest, subsidized_interest, loan_period, grace_period)
-                                        #print(ln.interest_paid)
                                 print("Esco Benefits:")
                                 print(esco.benefits)
                                 print("Esco Costs:")
@@ -525,12 +526,6 @@ def investment_analysis_results(request):
                 print(per.benefits)
                 print("Actor Costs")
                 print(per.costs)
-                sub.clear()
-                tax.clear()
-                ln.clear()
-                esco.clear()
-                per.clear()
-                m.clear()
         return render(request, 'app2/investment_result_page.html', {'analysis':an})
 
 def investment_result_page(request):
@@ -540,62 +535,3 @@ def investment_result_page(request):
 
 
 
-def grab_params_and_give_results(request):
-        selected = request.session['list']
-        social = request.session['dictionary']
-
-        #print(selected)
-        chose_lifetime = request.POST.getlist('lifetime')
-        if chose_lifetime == []:
-                analysis_period = request.POST.get('analysis_period')
-        else:
-                #tbd, for every measure selected
-                analysis_period = 0
-        discount_rate = request.POST.get('discount_rate')
-
-        for item in selected:
-                hip = Social.objects.get(name=social[item])
-                hip.discount_rate = discount_rate
-                hop = Measure.objects.get(name=item)
-                if analysis_period == 0:
-                        hip.analysis_period = hop.lifetime
-                else: 
-                        hip.analysis_period = analysis_period
-                hip.save()
-                energy_conservation = {
-                        "electricity": 0,
-                        "diesel_oil": 0,
-                        "motor_gasoline": 0, 
-                        "natural_gas": 0, 
-                        "biomass": 0
-                }
-                opa = Energy_Conservation.objects.get(measure=hop)
-                #opa.electricity3 = 25
-                #opa.save()
-                energy_conservation['electricity'] = opa.electricity3
-                energy_conservation['diesel_oil'] = opa.diesel_oil3
-                energy_conservation['motor_gasoline'] = opa.motor_gasoline3
-                energy_conservation['natural_gas'] = opa.natural_gas3
-                energy_conservation['biomass'] = opa.biomass3
-
-                #print(energy_conservation['electricity'])
-                externalities = []
-                for i in range(0, 25):
-                        externalities.insert(i, 2.11)
-                cost = hop.cost
-                lifetime = hop.lifetime
-                #print(cost)
-                scba = social_investment_analysis.Social(cost, lifetime, externalities, energy_conservation)
-
-                hip.npv = scba.npv
-                hip.b_to_c = scba.b_to_c
-                hip.irr = scba.irr
-                hip.dpbp = scba.dpbp
-                hip.save()
-         
-        
-
-        #scba = social_investment_analysis.Social(33800, 20, externalities, energy_conservation)
-        #print(scba.pbp)
-        #  print(scba.dpbp)
-        return render(request, 'app2/cba_params_and_results.html', {'analysis_period': analysis_period, 'discount_rate': discount_rate})

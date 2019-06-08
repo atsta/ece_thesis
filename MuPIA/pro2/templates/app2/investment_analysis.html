@@ -123,43 +123,40 @@
         <br>
         <form method="POST" action='{% url "choose_costs_and_benefits_investment" %}'>
             {% csrf_token %}
-            {% for element in selected %}
             <table>
                 <thead>
                     <tr>
-                        <th scope="col"colspan="2">{{element}}</th>
+                        <th scope="col"colspan="2"></th>
                     </tr>
                 </thead>
                 <tbody>
                     <td>
                         <strong>Benefits</strong>
                         <hr>
-                        <!-- measure name0 as name in benefits input -->
-                        {% with element|add:"0" as benefit %}
-                        <input type="checkbox" name={{benefit}} value ='energy_savings'/>Energy Savings<br>
-                        <input type="checkbox" name={{benefit}} value ='maintenance'/>Maintenance<br>
-                        <input type="checkbox" name={{benefit}} value ='externalities'/>Externalities<br>
-                        <input type="checkbox" name={{benefit}} value ='value_growth'/>Value Growth<br>
-                        <input type="checkbox" name={{benefit}} value ='work_efficiency'/>Work Efficiency<br>
-                        <input type="checkbox" name={{benefit}} value ='employability'/>Employability<br>
-                        {% endwith %}
+                        <input type="checkbox" name="benefit" value ='energy_savings'/>Energy Savings<br>
+                        <input type="checkbox" name="benefit" value='tax_depreciation'/>Tax reduction due to depreciation<br>
+                        <input type="checkbox" name="benefit" value ='residual_value'/>Residual Value<br>               
+                        <input type="checkbox" name="benefit" value ='maintenance'/>Maintenance<br>
+                        <input type="checkbox" name="benefit" value ='externalities'/>Externalities<br>
+                        <input type="checkbox" name="benefit" value ='value_growth'/>Value Growth<br>
+                        <input type="checkbox" name="benefit" value ='work_efficiency'/>Work Efficiency<br>
+                        <input type="checkbox" name="benefit" value ='employability'/>Employability<br>
+                        <input type="checkbox" name="benefit" value ='other_benefits'/>Other Benefits<br>
                     </td>
                     <td class="costs">
                         <strong>Costs</strong>
                         <hr>
-                        <!-- measure name1 as name in costs input -->
-                        {% with element|add:"1" as cost %}
-                        <input type="checkbox" name={{cost}} value ='equipment'/>Equipment<br>
-                        <input type="checkbox" name={{cost}} value ='management'/>Management Cost<br>
-                        <input type="checkbox" name={{cost}} value ='reduced_income'/>Reduced Income<br>
-                        {% endwith %}
+                        <input type="checkbox" name='cost' value ='equipment'/>Equipment<br>
+                        <input type="checkbox" name='cost' value ='maintenance'/>Maintenance<br>
+                        <input type="checkbox" name='cost' value ='management'/>Management Cost<br>
+                        <input type="checkbox" name='cost' value ='reduced_income'/>Reduced Income<br>
+                        <input type="checkbox" name='cost' value ='other_costs'/>Other Costs<br>
                     </td>
                 </tbody>
             </table>
             <br>
             <div style="clear:both;"></div>
             <br>
-            {% endfor %}
             <div class="ok-btn">
                 <input type="submit" class="btn" value="OK">
             </div>        
