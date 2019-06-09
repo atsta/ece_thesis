@@ -130,11 +130,10 @@
         <br>
         <form method="POST" action='{% url "choose_costs_and_benefits" %}'>
             {% csrf_token %}
-            {% for element in selected %}
             <table>
                 <thead>
                     <tr>
-                        <th scope="col"colspan="2">{{element}}</th>
+                        <th scope="col"colspan="2"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -186,7 +185,6 @@
             <br>
             <div style="clear:both;"></div>
             <br>
-            {% endfor %}
             <div class="ok-btn">
             <input type="submit" class="btn" value="OK">
             </div>

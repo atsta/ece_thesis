@@ -3,9 +3,9 @@ from django.shortcuts import render
 from app2.forms import NewMeasureForm, MechForm1, MechForm2, MechForm3, MechForm4, LoanForm, FactorForm, ContractForm, ProfitInput, IrrInput, SInput, DInput, BenefitSatisfy, CostStatisfy, PeriodSatisfy, EscoLoan, SubsidyForm
 from . import forms
 
-from app2.models import Perspective, Esco, Measure, Social, Energy_Conservation, Costs, Benefits, Portfolio
+from app2.models import Perspective, Esco, Measure, Social, Financial, Energy_Conservation, Costs, Benefits, Portfolio
 
-from modules import energy_measure, financial_mechanism, perspective, social_investment_analysis
+from modules import energy_measure, financial_mechanism, perspective, social_investment_analysis, financial_investment_analysis
 
 import string
 import random
@@ -118,6 +118,7 @@ def grab_params_and_give_results(request):
         article = request.session['article']
 
         chose_lifetime = request.POST.getlist('lifetime')
+        
         give_lifetime_as_period = 0
 
         if chose_lifetime == []:
@@ -126,13 +127,20 @@ def grab_params_and_give_results(request):
                 #tbd, for every measure selected
                 analysis_period = 0
                 give_lifetime_as_period = 1
+        
+        request.session['lifetime'] = give_lifetime_as_period
 
         analysis_period = int(analysis_period)
+        request.session['period'] = analysis_period
+
         discount_rate = request.POST.get('discount_rate')
         discount_rate = float(discount_rate)/100
+        request.session['discount_rate'] = discount_rate
 
         an = []
         social = {}
+        pieces = []
+
         for item in selected:
                 hip = Measure.objects.get(name=item)
                 if article == 'art3':
@@ -140,15 +148,16 @@ def grab_params_and_give_results(request):
                 else:
                         m = energy_measure.Measure(item, 7)
                 if give_lifetime_as_period == 1:
-                        analysis_period = analysis_period = m.specs['lifetime']
+                        analysis_period = m.specs['lifetime']
+                        
 
                 scba = social_investment_analysis.Social(m.specs, m.energy_conservation, m.energy_price_without_taxes, m.energy_price_growth_rate, costs, benefits, analysis_period, discount_rate)
-
-                #scba = social_investment_analysis.Social(cost, lifetime, externalities, energy_conservation)
-
+                
+                
+                #fcba = social_investment_analysis.Social(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, costs, benefits, analysis_period, discount_rate)
 
                 social[item] = id_generator()
-                an.append(social[item])
+                
                 hop = Social(name=social[item], measure=hip)
                 hop.discount_rate = discount_rate
                 hop.analysis_period = analysis_period
@@ -161,11 +170,67 @@ def grab_params_and_give_results(request):
                 hop.irr = scba.irr
                 hop.dpbp = scba.dpbp
                 hop.save()
+                an.append(hop)
+                pieces.append(social[item])
 
-        op = Portfolio(name=id_generator(), genre ='social', analysis_pieces=an)
+        op = Portfolio(name=id_generator(), genre ='social', analysis_pieces=pieces)
         op.save()
                 
-        return render(request, 'app2/cba_params_and_results.html', {'analysis_period': analysis_period, 'discount_rate': discount_rate})
+        return render(request, 'app2/scba_result_page.html', {'analysis':an})
+
+
+def social_result_page(request):
+        
+        return render(request, 'app2/scba_result_page.html')
+
+def financial_result_page(request):
+        selected = request.session['list']
+        benefits = request.session['benefits'] 
+        costs = request.session['costs']
+        article = request.session['article']
+        discount_rate = request.session['discount_rate']
+        lifetime = request.session['lifetime']
+
+        
+        an = []
+        fin = {}
+        pieces = []
+        for item in selected:
+                hip = Measure.objects.get(name=item)
+                if article == 'art3':
+                        m = energy_measure.Measure(item, 3)
+                else:
+                        m = energy_measure.Measure(item, 7)
+                if lifetime == 1:
+                        analysis_period = m.specs['lifetime']
+                else: 
+                        analysis_period = request.session['period']
+                analysis_period = int(analysis_period)
+
+                fcba = financial_investment_analysis.Financial(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, costs, benefits, analysis_period, discount_rate)
+        
+                fin[item] = id_generator()
+                
+                hop = Financial(name=fin[item], measure=hip)
+                hop.discount_rate = discount_rate
+                hop.analysis_period = analysis_period
+                hop.benefits = benefits
+                hop.costs = costs
+                hop.save()
+                
+                hop.npv = fcba.npv
+                hop.b_to_c = fcba.b_to_c
+                hop.irr = fcba.irr
+                hop.dpbp = fcba.dpbp
+                hop.save()
+                an.append(hop)
+                pieces.append(fin[item])
+
+        op = Portfolio(name=id_generator(), genre ='financial', analysis_pieces=pieces)
+        op.save()
+
+        return render(request, 'app2/fcba_result_page.html', {'analysis': an})
+
 
 #investment analysis views
 
@@ -452,6 +517,7 @@ def grab_esco_params(request):
         return render(request, 'app2/investment_analysis_results.html')
         
 def investment_analysis_results(request):
+        max_period = 0
         chose_lifetime = request.POST.getlist('lifetime')
         if chose_lifetime == []:
                 analysis_period = request.POST.get('analysis_period')
@@ -475,6 +541,7 @@ def investment_analysis_results(request):
         
         persp = {}
         an = []
+        pieces = []
         for item in selected_measures:
                 hip = Measure.objects.get(name=item)
                 if article == 'art3':
@@ -501,6 +568,8 @@ def investment_analysis_results(request):
                                 subsidized_interest = request.session['sr'] 
                                 loan_period = request.session['lp']
                                 grace_period = request.session['gp'] 
+                                if loan_period > max_period:
+                                        max_period = loan_period
                                 for it in mechanism:
                                         if it == "subsidy":
                                                 sub_rate = request.session['subsidy']
@@ -513,6 +582,8 @@ def investment_analysis_results(request):
                                 depreciation_tax_rate  = request.session['tax_rate']  
                                 tax_lifetime =  request.session['tax_lifetime'] 
                                 tax = financial_mechanism.Tax_depreciation(0.25, depreciation_tax_rate, tax_lifetime)
+                                        if tax_lifetime > max_period:
+                                                max_period = tax_lifetime
                 for submech in mechanism:
                         if submech == 'energy_contract':
                                 per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs[item], selected_benefits[item], analysis_period, discount_rate, sub, ln, esco, tax)
@@ -528,7 +599,9 @@ def investment_analysis_results(request):
                                         loan_rate = request.session['esco_lr'] 
                                         annual_rate = request.session['esco_ar']  
                                         subsidized_interest = request.session['esco_sr'] 
-                                        loan_period = request.session['esco_lp'] 
+                                        loan_period = request.session['esco_lp']
+                                        if loan_period > max_period:
+                                                max_period = loan_period 
                                         grace_period = request.session['esco_gp']
                                         if criterion_satisfaction == 'cost_esco':
                                                 esco_loan = financial_mechanism.Loan(m.specs['cost']*1.24 ,loan_rate, annual_rate, subsidized_interest, loan_period, grace_period )
@@ -550,15 +623,23 @@ def investment_analysis_results(request):
                                 if criterion_satisfaction == 'benefit_share':
                                         cost_esco_rate = request.session['cost_share']
                                         contract_period = request.session['esco_period']
+                                        if contract_period  > max_period:
+                                                max_period = contract_period 
                                         esco = financial_mechanism.Esco(m.specs, savings, int(avg_ratios), criterion, int(cr_val), criterion_satisfaction, float(esco_disc_rate), float(cost_esco_rate), 1,int(contract_period) , esco_loan)
                                 if criterion_satisfaction == 'cost_esco':
                                         contract_period = request.session['esco_period'] 
+                                        if contract_period  > max_period:
+                                                max_period = contract_period 
                                         benefit_share_rate = request.session['benefit_share'] 
                                         esco= financial_mechanism.Esco(m.specs, savings, avg_ratios, criterion, cr_val, criterion_satisfaction, esco_disc_rate, 1, benefit_share_rate, contract_period, esco_loan)
                                 print("Esco Benefits:")
                                 print(esco.benefits)
                                 print("Esco Costs:")
                                 print(esco.costs)
+                
+                if analysis_period < max_period:
+                        #error handling
+                        return render(request, 'app2/investment_analysis_results.html')
                 per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
                 
                 #store perspective analysis to database 
@@ -577,13 +658,14 @@ def investment_analysis_results(request):
                 hop.dpbp = per.dpbp
                 hop.spbp = per.pbp
                 hop.save()
-
+                
+                pieces.append(persp[item])
                 an.append(hop)
                 print("Actor Benefits")
                 print(per.benefits)
                 print("Actor Costs")
                 print(per.costs)
-        op = Portfolio(name=id_generator(), genre ='perspective', analysis_pieces=an)
+        op = Portfolio(name=id_generator(), genre ='perspective', analysis_pieces=pieces)
         op.save()
                 
         return render(request, 'app2/investment_result_page.html', {'analysis':an})

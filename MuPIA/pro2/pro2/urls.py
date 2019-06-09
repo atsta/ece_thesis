@@ -38,4 +38,7 @@ urlpatterns = [
     url(r'^investment_analysis_results/', views.investment_analysis_results, name='investment_analysis_results'),
     url(r'^grab_esco_params/', views.grab_esco_params, name='grab_esco_params'),
     url(r'^investment_result_page/', views.investment_result_page, name='investment_result_page'),
+    url(r'^scba_result_page/', views.social_result_page, name='scba_result_page'),
+    url(r'^fcba_result_page/', views.financial_result_page, name='fcba_result_page'),
+
 ]

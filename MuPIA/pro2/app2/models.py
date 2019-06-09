@@ -107,6 +107,24 @@ class Social(models.Model):
     irr = models.FloatField(default=0, null=True)
     dpbp = models.FloatField(default=0, null=True)
 
+class Financial(models.Model):
+    name = models.CharField(primary_key=True, max_length=150, unique=True, default=None)
+    measure = models.ForeignKey(Measure, on_delete=models.CASCADE, default=None)
+    time_added = models.DateTimeField(default=datetime.now, blank=True)
+
+    #selected costs and benefits for this analysis
+    costs = models.CharField(max_length=150, default=None, null=True)
+    benefits = models.CharField(max_length=150, default=None, null=True)
+
+    #analysis specs
+    discount_rate = models.FloatField(default=0.03)
+    analysis_period = models.IntegerField(default=25)
+    
+    #analysis results
+    npv = models.FloatField(default=0, null=True)
+    b_to_c = models.FloatField(default=0, null=True)
+    irr = models.FloatField(default=0, null=True)
+    dpbp = models.FloatField(default=0, null=True)
 
 class Perspective(models.Model):
     name = models.CharField(primary_key=True, max_length=150, unique=True, default=None)
