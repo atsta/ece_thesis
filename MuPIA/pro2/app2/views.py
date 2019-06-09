@@ -582,8 +582,8 @@ def investment_analysis_results(request):
                                 depreciation_tax_rate  = request.session['tax_rate']  
                                 tax_lifetime =  request.session['tax_lifetime'] 
                                 tax = financial_mechanism.Tax_depreciation(0.25, depreciation_tax_rate, tax_lifetime)
-                                        if tax_lifetime > max_period:
-                                                max_period = tax_lifetime
+                                if tax_lifetime > max_period:
+                                        max_period = tax_lifetime
                 for submech in mechanism:
                         if submech == 'energy_contract':
                                 per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs[item], selected_benefits[item], analysis_period, discount_rate, sub, ln, esco, tax)
