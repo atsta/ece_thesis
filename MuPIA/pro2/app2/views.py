@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from app2.forms import PerspectiveForm, NewMeasureForm, MechForm1, MechForm2, MechForm3, MechForm4, LoanForm, FactorForm, ContractForm, ProfitInput, IrrInput, SInput, DInput, BenefitSatisfy, CostStatisfy, PeriodSatisfy, EscoLoan, SubsidyForm
+from app2.forms import NewMeasureForm, MechForm1, MechForm2, MechForm3, MechForm4, LoanForm, FactorForm, ContractForm, ProfitInput, IrrInput, SInput, DInput, BenefitSatisfy, CostStatisfy, PeriodSatisfy, EscoLoan, SubsidyForm
 from . import forms
 
 from app2.models import Perspective, Esco, Measure, Social, Energy_Conservation, Costs, Benefits, Portfolio
@@ -48,37 +48,28 @@ def analysis(request):
 def measure_search_results(request):
         selected_category = request.POST.get('category')
         selected_type = request.POST.get('type')
+        selected_article = request.POST.get('article')
+        request.session['article'] = selected_article
 
         results = Measure.objects.filter(measure_type=selected_type, category=selected_category)
-        
+
         return render(request, 'app2/measure.html', {'results': results, 
                                                         'selected_category': selected_category, 
                                                         'selected_type': selected_type})
-def grab_selected_results(request):
+def grab_selected_results(request): 
         selected = request.GET.getlist('measure')
-        
-        #create an analysis instance for every selected measure
-        #create random names for every analysis instance
-        social = {}
+
         #remove '\' from measure name
         for i in range(len(selected)):
                 k = selected[i]
                 k = k[:-1]
                 selected[i] = k
-        op = Portfolio(name=id_generator(), genre ='social', analysis_pieces=[])
-        op.save()
-
+        
         display_benefits = ['maintenance', 'employability', 'work_efficiency','value_growth', 'externalities', 'other_benefits']
         display_costs = ['management', 'maintenance', 'reduced_income', 'other_costs']
 
         for element in selected:
-                social[element] = id_generator()
                 hip = Measure.objects.get(name=element)
-                hop = Social(name=social[element], measure=hip)
-                op.analysis_pieces.append(social[element])
-                op.save()
-                hop.save()
-
                 b = list(Benefits.objects.filter(measure=hip).values())
                 print(b)
                 if b[0]['maintenance'] == 0 and "maintenance" in display_benefits:
@@ -106,85 +97,73 @@ def grab_selected_results(request):
                 if c[0]['other_costs'] == 0 and "other_costs" in display_costs:
                         display_costs.remove("other_costs")
 
-
-                
-        request.session['dictionary'] = social
         request.session['list'] = selected
-        print(social)
         return render(request, 'app2/cba.html', {'selected': selected, 'display_benefits':display_benefits, 'display_costs':display_costs})
 
 def choose_costs_and_benefits(request):
-        selected = request.session['list']
-        social = request.session['dictionary']
-
-        print(social)
         benefits = request.POST.getlist('benefit')
         costs = request.POST.getlist('cost')
         print(costs)
         print(benefits)
-        for item in selected:
-                hip = Social.objects.get(name=social[item])
-                
-                #measure name0 -> benefit 
-                #measure name1 -> cost
-                benefit = "%s%s" % (item, "0")
-                hip.benefits = benefits
-                
-                cost = "%s%s" % (item, "1")
-                hip.costs = costs
 
-                hip.save()
+        request.session['benefits'] = benefits
+        request.session['costs'] = costs
+
         return render(request, 'app2/cba_params_and_results.html', {'costs': costs, 'benefits': benefits})
 
 def grab_params_and_give_results(request):
         selected = request.session['list']
-        social = request.session['dictionary']
+        benefits = request.session['benefits'] 
+        costs = request.session['costs']
+        article = request.session['article']
 
-        #print(selected)
         chose_lifetime = request.POST.getlist('lifetime')
+        give_lifetime_as_period = 0
+
         if chose_lifetime == []:
                 analysis_period = request.POST.get('analysis_period')
         else:
                 #tbd, for every measure selected
                 analysis_period = 0
+                give_lifetime_as_period = 1
+
+        analysis_period = int(analysis_period)
         discount_rate = request.POST.get('discount_rate')
+        discount_rate = float(discount_rate)/100
 
+        an = []
+        social = {}
         for item in selected:
-                hip = Social.objects.get(name=social[item])
-                hip.discount_rate = discount_rate
-                hop = Measure.objects.get(name=item)
-                if analysis_period == 0:
-                        hip.analysis_period = hop.lifetime
-                else: 
-                        hip.analysis_period = analysis_period
-                hip.save()
-                energy_conservation = {
-                        "electricity": 0,
-                        "diesel_oil": 0,
-                        "motor_gasoline": 0, 
-                        "natural_gas": 0, 
-                        "biomass": 0
-                }
-                opa = Energy_Conservation.objects.get(measure=hop)
+                hip = Measure.objects.get(name=item)
+                if article == 'art3':
+                        m = energy_measure.Measure(item, 3)
+                else:
+                        m = energy_measure.Measure(item, 7)
+                if give_lifetime_as_period == 1:
+                        analysis_period = analysis_period = m.specs['lifetime']
 
-                energy_conservation['electricity'] = opa.electricity3
-                energy_conservation['diesel_oil'] = opa.diesel_oil3
-                energy_conservation['motor_gasoline'] = opa.motor_gasoline3
-                energy_conservation['natural_gas'] = opa.natural_gas3
-                energy_conservation['biomass'] = opa.biomass3
+                scba = social_investment_analysis.Social(m.specs, m.energy_conservation, m.energy_price_without_taxes, m.energy_price_growth_rate, costs, benefits, analysis_period, discount_rate)
 
-                externalities = []
-                for i in range(0, 25):
-                        externalities.insert(i, 2.11)
-                cost = hop.cost
-                lifetime = hop.lifetime
-                scba = social_investment_analysis.Social(cost, lifetime, externalities, energy_conservation)
+                #scba = social_investment_analysis.Social(cost, lifetime, externalities, energy_conservation)
 
-                hip.npv = scba.npv
-                hip.b_to_c = scba.b_to_c
-                hip.irr = scba.irr
-                hip.dpbp = scba.dpbp
-                hip.save()
+
+                social[item] = id_generator()
+                an.append(social[item])
+                hop = Social(name=social[item], measure=hip)
+                hop.discount_rate = discount_rate
+                hop.analysis_period = analysis_period
+                hop.benefits = benefits
+                hop.costs = costs
+                hop.save()
+                
+                hop.npv = scba.npv
+                hop.b_to_c = scba.b_to_c
+                hop.irr = scba.irr
+                hop.dpbp = scba.dpbp
+                hop.save()
+
+        op = Portfolio(name=id_generator(), genre ='social', analysis_pieces=an)
+        op.save()
                 
         return render(request, 'app2/cba_params_and_results.html', {'analysis_period': analysis_period, 'discount_rate': discount_rate})
 
@@ -604,6 +583,9 @@ def investment_analysis_results(request):
                 print(per.benefits)
                 print("Actor Costs")
                 print(per.costs)
+        op = Portfolio(name=id_generator(), genre ='perspective', analysis_pieces=an)
+        op.save()
+                
         return render(request, 'app2/investment_result_page.html', {'analysis':an})
 
 def investment_result_page(request):

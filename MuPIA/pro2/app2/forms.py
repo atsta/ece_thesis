@@ -1,33 +1,35 @@
 from django import forms
 from app2.models import Measure, Perspective, Esco
 from django.core import validators, serializers
+from django.utils.translation import ugettext_lazy as _
 
 
 class NewMeasureForm(forms.ModelForm):
+    description = forms.CharField(required=False)
     class Meta:
         model = Measure
         fields = '__all__'
-
+        labels = {
+            "cost": _("Cost € (without taxes)"),
+            "lifetime": _("Lifetime (years)")
+        }
         def get_measure(self):
             return self.model
+    #some input validation
     def clean_lifetime(self):
         lifetime = self.cleaned_data['lifetime']
         if lifetime <= 0:
             raise forms.ValidationError("Lifetime must be positive number")
         return lifetime  
-
-class PerspectiveForm(forms.ModelForm):
-    class Meta:
-        model = Perspective
-        fields = '__all__'
-
-
+    def clean_cost(self):
+        cost = self.cleaned_data['cost']
+        if cost <= 0:
+            raise forms.ValidationError("Cost must be positive number")
+        return cost
 
 class SomeInput(forms.Form):
     measure = forms.CharField(max_length=15)
     analysis = forms.CharField(max_length=15)
-
-#class ChooseMeasures(forms.Form):
 
 MECHANISM1_CHOICES = (
     ('subsidy', 'Subsidy'),

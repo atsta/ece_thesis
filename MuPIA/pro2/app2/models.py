@@ -85,6 +85,8 @@ class Portfolio(models.Model):
     name = models.CharField(primary_key=True, max_length=150, unique=True, default=None)
     genre = models.CharField(max_length=150, default=None)
     analysis_pieces = models.CharField(max_length=300, default=None)
+    time_added = models.DateTimeField(default=datetime.now, blank=True)
+
 
 class Social(models.Model):
     name = models.CharField(primary_key=True, max_length=150, unique=True, default=None)

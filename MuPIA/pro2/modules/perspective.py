@@ -246,11 +246,18 @@ class Perspective():
             for row in cursor1:
                 if(row[0].strip() == self.measure['name']):
                     if par == 'maintenance':
-                        return row[2]
+                        return row[1]
                     if par == 'externalities':
+                        return row[2]
+                    if par == 'value_growth':
                         return row[3]
+                    if par == 'work_efficiency':
+                        return row[4]
+                    if par == 'employability':
+                        return row[5]
+                    if par == 'other_benefits':
+                        return row[6]
                     break
-
         except (Exception, psycopg2.Error) as error :
                     print ("Error while connecting to PostgreSQL", error)
         finally:

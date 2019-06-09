@@ -161,7 +161,7 @@
                     <!-- min, max num limits to be defined -->
                     <div class="inline">
                     <p class="lab">Analysis Period</p>
-                    <input class="par" type="number" name="analysis_period" id="ManuallyEnterAnalysisPeriod"/>
+                    <input class="par" type="number" name="analysis_period" min='0' id="ManuallyEnterAnalysisPeriod"/>
                 </div>
                 <div class="checkb">
                         <input type="checkbox" name="lifetime" onchange="document.getElementById('ManuallyEnterAnalysisPeriod').disabled = this.checked;"> The same as lifetime of measure<br>
@@ -170,7 +170,7 @@
                 <br>
                 <div class="inline">
                     <p class="lab">Discount Rate</p>
-                    <input class="par" type="number" name="discount_rate" min="1" max="15" step="0.1"/>  % 
+                    <input class="par" type="number" name="discount_rate" min="1" max="25" step="0.1"/>  % 
                     </div>
                     <br>
                     <input type="submit" class="btn btn-primary" value="OK">
