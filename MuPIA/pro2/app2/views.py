@@ -509,8 +509,8 @@ def investment_analysis_results(request):
                 if give_lifetime_as_period == 1:
                         analysis_period = m.specs['lifetime']
                 hop.analysis_period = analysis_period
-                hop.benefits = selected_benefits[item]
-                hop.costs = selected_costs[item]
+                hop.benefits = selected_benefits
+                hop.costs = selected_costs
                 hop.save()
 
                 sub = financial_mechanism.Subsidy(m.specs, 0.0)
@@ -585,7 +585,7 @@ def investment_analysis_results(request):
                                 print(esco.benefits)
                                 print("Esco Costs:")
                                 print(esco.costs)
-                per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs[item], selected_benefits[item], analysis_period, discount_rate, sub, ln, esco, tax)
+                per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
                 hop = Perspective.objects.get(name=persp[item])
                 hop.npv = per.npv
                 hop.b_to_c = per.b_to_c

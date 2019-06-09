@@ -265,7 +265,7 @@ class Perspective():
                 self.savings_per_year_taxable = my_rounded_list
                 self.benefits['Energy savings'] = self.savings_per_year_taxable
                 continue
-            if self.subsidy.subsidy_rate > 0 and item == 'tax_depreciation':
+            if self.tax_depreciation.tax_depreciation_rate > 0 and item == 'tax_depreciation':
                 my_rounded_list = [ round(elem, 2) for elem in self.tax_depreciation_per_year ]
                 self.tax_depreciation_per_year = my_rounded_list
                 self.benefits['Benefit from Tax Depreciation'] = self.tax_depreciation_per_year

@@ -3,6 +3,8 @@ create your models here
 """
 from django.db import models
 
+from datetime import datetime  
+
 #class fcba(models.Model):
 
 #class scba(models.Model):
@@ -75,6 +77,7 @@ class Portfolio(models.Model):
 class Social(models.Model):
     name = models.CharField(primary_key=True, max_length=150, unique=True, default=None)
     measure = models.ForeignKey(Measure, on_delete=models.CASCADE, default=None)
+    time_added = models.DateTimeField(default=datetime.now, blank=True)
 
     #selected costs and benefits for this analysis
     costs = models.CharField(max_length=150, default=None, null=True)
@@ -94,6 +97,8 @@ class Social(models.Model):
 class Perspective(models.Model):
     name = models.CharField(primary_key=True, max_length=150, unique=True, default=None)
     measure = models.ForeignKey(Measure, on_delete=models.CASCADE, default=None)
+    time_added = models.DateTimeField(default=datetime.now, blank=True)
+
 
     discount_rate = models.FloatField(default=0.03)
     analysis_period = models.IntegerField(default=25)
