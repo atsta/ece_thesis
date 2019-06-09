@@ -45,12 +45,12 @@ class Benefits(models.Model):
     measure = models.OneToOneField(Measure, 
                                 on_delete=models.CASCADE,
                                 primary_key=True, default=None)
-    maintenance = models.FloatField(max_length=150, default=None, null=True)
-    externalities = models.FloatField(max_length=150, default=None, null=True)
-    value_growth = models.FloatField(max_length=150, default=None, null=True) #just for buildings
-    work_efficiency = models.FloatField(max_length=150, default=None, null=True)
-    employability = models.FloatField(max_length=150, default=None, null=True)
-    other_benefits = models.FloatField(max_length=150, default=None, null=True)
+    maintenance = models.FloatField(max_length=150, null=True)
+    externalities = models.FloatField(max_length=150, default=0, null=True, editable=True)
+    value_growth = models.FloatField(max_length=150, default=0, null=True) #just for buildings
+    work_efficiency = models.FloatField(max_length=150, default=0, null=True)
+    employability = models.FloatField(max_length=150, default=0, null=True)
+    other_benefits = models.FloatField(max_length=150, default=0, null=True)
 
     def __str__(self):
         return "%s Benefits of measure: " % self.measure.name
@@ -59,10 +59,10 @@ class Costs(models.Model):
     measure = models.OneToOneField(Measure, 
                                 on_delete=models.CASCADE,
                                 primary_key=True, default=None)
-    management = models.FloatField(max_length=150, default=None, null=True)
-    maintenance = models.FloatField(max_length=150, default=None, null=True)
-    reduced_income = models.FloatField(max_length=150, default=None, null=True)
-    other_costs = models.FloatField(max_length=150, default=None, null=True)
+    management = models.FloatField(max_length=150, default=0, null=True)
+    maintenance = models.FloatField(max_length=150, default=0, null=True)
+    reduced_income = models.FloatField(max_length=150, default=0, null=True)
+    other_costs = models.FloatField(max_length=150, default=0, null=True)
     
     def __str__(self):
         return "%s Costs of measure: " % self.measure.name

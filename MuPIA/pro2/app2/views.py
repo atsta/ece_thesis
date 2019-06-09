@@ -30,9 +30,12 @@ def analysis(request):
                         measure = form.save(commit=True)
                         e = Energy_Conservation(measure=measure, biomass3=1300, electricity3 =300, diesel_oil3=15000, motor_gasoline3 = 1000)
                         e.save()
-                        c = Costs(measure=measure, equipment=measure.cost)
+                        c = Costs(measure=measure)
                         c.save()
                         b = Benefits(measure=measure)
+                        b.maintenance = 100
+                        b.employability = 10
+                        b.externalities = 10
                         b.save()
                         return render(request, 'app2/measure.html', {})
                 else: 
@@ -64,6 +67,10 @@ def grab_selected_results(request):
                 selected[i] = k
         op = Portfolio(name=id_generator(), genre ='social', analysis_pieces=[])
         op.save()
+
+        display_benefits = ['maintenance', 'employability', 'work_efficiency','value_growth', 'externalities', 'other_benefits']
+        display_costs = ['management', 'maintenance', 'reduced_income', 'other_costs']
+
         for element in selected:
                 social[element] = id_generator()
                 hip = Measure.objects.get(name=element)
@@ -71,19 +78,50 @@ def grab_selected_results(request):
                 op.analysis_pieces.append(social[element])
                 op.save()
                 hop.save()
+
+                b = list(Benefits.objects.filter(measure=hip).values())
+                print(b)
+                if b[0]['maintenance'] == 0 and "maintenance" in display_benefits:
+                        print('ok')
+                        display_benefits.remove("maintenance")
+                if b[0]['employability'] == 0 and "employability" in display_benefits:
+                        display_benefits.remove("employability")
+                if b[0]['work_efficiency'] == 0 and "work_efficiency" in display_benefits:
+                        display_benefits.remove("work_efficiency")
+                if b[0]['value_growth'] == 0 and "value_growth" in display_benefits:
+                        display_benefits.remove("value_growth")
+                if b[0]['externalities'] == 0 and "externalities" in display_benefits:
+                        display_benefits.remove("externalities")
+                if b[0]['other_benefits'] == 0 and "other_benefits" in display_benefits:
+                        display_benefits.remove("other_benefits")
+                
+                c = list(Costs.objects.filter(measure=hip).values())
+                print(c)
+                if c[0]['maintenance'] == 0 and "maintenance" in display_costs:
+                        display_costs.remove("maintenance")
+                if c[0]['reduced_income'] == 0 and "reduced_income" in display_costs:
+                        display_costs.remove("reduced_income")
+                if c[0]['management'] == 0 and "management" in display_costs:
+                        display_costs.remove("management")       
+                if c[0]['other_costs'] == 0 and "other_costs" in display_costs:
+                        display_costs.remove("other_costs")
+
+
                 
         request.session['dictionary'] = social
         request.session['list'] = selected
         print(social)
-        return render(request, 'app2/cba.html', {'selected': selected})
+        return render(request, 'app2/cba.html', {'selected': selected, 'display_benefits':display_benefits, 'display_costs':display_costs})
 
 def choose_costs_and_benefits(request):
         selected = request.session['list']
         social = request.session['dictionary']
 
         print(social)
-        benefits = request.POST.getlist(benefit)
-        costs = request.POST.getlist(cost)
+        benefits = request.POST.getlist('benefit')
+        costs = request.POST.getlist('cost')
+        print(costs)
+        print(benefits)
         for item in selected:
                 hip = Social.objects.get(name=social[item])
                 
@@ -181,10 +219,43 @@ def grab_selected_results_investment(request):
                 k = selected[i]
                 k = k[:-1]
                 selected[i] = k
+        display_benefits = ['maintenance', 'employability', 'work_efficiency','value_growth', 'externalities', 'other_benefits']
+        display_costs = ['management', 'maintenance', 'reduced_income', 'other_costs']
+        
+        for item in selected:
+                hip = Measure.objects.get(name=item)
+                b = list(Benefits.objects.filter(measure=hip).values())
+                print(b)
+                if b[0]['maintenance'] == 0 and "maintenance" in display_benefits:
+                        print('ok')
+                        display_benefits.remove("maintenance")
+                if b[0]['employability'] == 0 and "employability" in display_benefits:
+                        display_benefits.remove("employability")
+                if b[0]['work_efficiency'] == 0 and "work_efficiency" in display_benefits:
+                        display_benefits.remove("work_efficiency")
+                if b[0]['value_growth'] == 0 and "value_growth" in display_benefits:
+                        display_benefits.remove("value_growth")
+                if b[0]['externalities'] == 0 and "externalities" in display_benefits:
+                        display_benefits.remove("externalities")
+                if b[0]['other_benefits'] == 0 and "other_benefits" in display_benefits:
+                        display_benefits.remove("other_benefits")
+                
+                c = list(Costs.objects.filter(measure=hip).values())
+                print(c)
+                if c[0]['maintenance'] == 0 and "maintenance" in display_costs:
+                        display_costs.remove("maintenance")
+                if c[0]['reduced_income'] == 0 and "reduced_income" in display_costs:
+                        display_costs.remove("reduced_income")
+                if c[0]['management'] == 0 and "management" in display_costs:
+                        display_costs.remove("management")       
+                if c[0]['other_costs'] == 0 and "other_costs" in display_costs:
+                        display_costs.remove("other_costs")
+
 
         request.session['list'] = selected
         print(selected)
-        return render(request, 'app2/investment_analysis.html', {'selected': selected})
+        
+        return render(request, 'app2/investment_analysis.html', {'selected': selected, 'display_benefits':display_benefits, 'display_costs':display_costs})
 
 def choose_costs_and_benefits_investment(request):
         selected_category = request.session['category']
@@ -194,6 +265,7 @@ def choose_costs_and_benefits_investment(request):
         benefits = request.POST.getlist('benefit')
         costs = request.POST.getlist('cost')
         
+
         print(costs)
         print(benefits)        
         print(selected_category)

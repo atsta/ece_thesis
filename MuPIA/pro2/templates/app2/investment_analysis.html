@@ -105,6 +105,12 @@
                 border-radius: 5px;
                 font-size: 15px;   
             }
+            .costs input{
+               margin-bottom: 15px;
+            }
+            .benefits input{
+                margin-bottom: 15px;
+            }
         </style>    
     </head>
     <body>
@@ -130,27 +136,47 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <td>
+                    <td class="benefits">
                         <strong>Benefits</strong>
                         <hr>
                         <input type="checkbox" name="benefit" value ='energy_savings'/>Energy Savings<br>
                         <input type="checkbox" name="benefit" value='tax_depreciation'/>Tax reduction due to depreciation<br>
                         <input type="checkbox" name="benefit" value ='residual_value'/>Residual Value<br>               
-                        <input type="checkbox" name="benefit" value ='maintenance'/>Maintenance<br>
-                        <input type="checkbox" name="benefit" value ='externalities'/>Externalities<br>
+                        {% if "maintenance" in display_benefits %}
+                            <input type="checkbox" name="benefit" value ='maintenance'/>Maintenance<br>
+                        {% endif %}
+                        {% if 'externalities' in display_benefits %}
+                            <input type="checkbox" name="benefit" value ='externalities'/>Externalities<br>
+                        {% endif %}
+                        {% if 'value_growth' in display_benefits %}
                         <input type="checkbox" name="benefit" value ='value_growth'/>Value Growth<br>
+                        {% endif %}
+                        {% if 'work_efficiency' in display_benefits %}
                         <input type="checkbox" name="benefit" value ='work_efficiency'/>Work Efficiency<br>
+                        {% endif %}
+                        {% if 'employability' in display_benefits %}
                         <input type="checkbox" name="benefit" value ='employability'/>Employability<br>
+                        {% endif %}
+                        {% if 'other_benefits' in display_benefits %}
                         <input type="checkbox" name="benefit" value ='other_benefits'/>Other Benefits<br>
+                        {% endif %}
                     </td>
                     <td class="costs">
                         <strong>Costs</strong>
                         <hr>
-                        <input type="checkbox" name='cost' value ='equipment'/>Equipment<br>
-                        <input type="checkbox" name='cost' value ='maintenance'/>Maintenance<br>
+                        <input type="checkbox" name='cost' value ='equipment'/>Equipment Cost<br>
+                        {% if 'maintenance' in display_costs %}
+                        <input type="checkbox" name='cost' value ='maintenance'/>Maintenance Cost<br>
+                        {% endif %}
+                        {% if 'management' in display_costs %}
                         <input type="checkbox" name='cost' value ='management'/>Management Cost<br>
+                        {% endif %}
+                        {% if 'reduced_income' in display_costs %}
                         <input type="checkbox" name='cost' value ='reduced_income'/>Reduced Income<br>
+                        {% endif %}
+                        {% if 'other_costs' in display_costs %}
                         <input type="checkbox" name='cost' value ='other_costs'/>Other Costs<br>
+                        {% endif %}
                     </td>
                 </tbody>
             </table>
