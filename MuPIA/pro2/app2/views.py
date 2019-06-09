@@ -487,31 +487,26 @@ def investment_analysis_results(request):
         mechanism = request.session['mechanism']
         request.session['inv_analysis_period'] = analysis_period
         request.session['inv_discount_rate'] = discount_rate
-        persp = {}
+
         give_lifetime_as_period = 0
-        an = []
         if analysis_period == 0:
                 give_lifetime_as_period = 1
 
         analysis_period = int(analysis_period)
+        
+        persp = {}
+        an = []
         for item in selected_measures:
                 hip = Measure.objects.get(name=item)
-                persp[item]= id_generator()
-                hop = Perspective(name=persp[item], measure=hip)
-                hop.save()
                 if article == 'art3':
                         m = energy_measure.Measure(item, 3)
                 else:
                         m = energy_measure.Measure(item, 7)
-                hop = Perspective.objects.get(name=persp[item])
-                hop.financial_mechanisms = mechanism
-                hop.discount_rate = discount_rate              
+
                 if give_lifetime_as_period == 1:
                         analysis_period = m.specs['lifetime']
-                hop.analysis_period = analysis_period
-                hop.benefits = selected_benefits
-                hop.costs = selected_costs
-                hop.save()
+                
+   
 
                 sub = financial_mechanism.Subsidy(m.specs, 0.0)
                 tax = financial_mechanism.Tax_depreciation(0.0, 0.0, 0)
@@ -586,13 +581,24 @@ def investment_analysis_results(request):
                                 print("Esco Costs:")
                                 print(esco.costs)
                 per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
+                
+                #store perspective analysis to database 
+                persp[item]= id_generator()
+                hop = Perspective(name=persp[item], measure=hip)
+                hop.save()
                 hop = Perspective.objects.get(name=persp[item])
+                hop.financial_mechanisms = mechanism
+                hop.discount_rate = discount_rate              
+                hop.analysis_period = analysis_period
+                hop.benefits = selected_benefits
+                hop.costs = selected_costs
                 hop.npv = per.npv
                 hop.b_to_c = per.b_to_c
                 hop.irr = per.irr
                 hop.dpbp = per.dpbp
                 hop.spbp = per.pbp
                 hop.save()
+
                 an.append(hop)
                 print("Actor Benefits")
                 print(per.benefits)

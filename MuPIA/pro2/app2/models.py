@@ -9,14 +9,26 @@ from datetime import datetime
 
 #class scba(models.Model):
 
+CATEGORY_CHOICES = [
+    ("industry", "Industry"),
+    ("household", "Household-Houses"),
+    ("business", "Business"),
+    ("private_transport", "Private Trasport"),
+    ("public_transport", "Public Transport"),
+    ("public_buildings", "Public Buildings"),
 
+]
+TYPE_CHOICES = [
+    ("technical", "Technical"),
+    ("behavioral", "Behavioral"),
+]
 class Measure(models.Model):
     name = models.CharField(max_length=150, unique=True, primary_key=True)
     cost = models.FloatField(default=0)
     lifetime = models.IntegerField(default=0)
     description = models.TextField(default=None)
-    category = models.CharField(max_length=150, default=None)
-    measure_type = models.CharField(max_length=150, default=None)
+    category = models.CharField(max_length=150, default=None, choices=CATEGORY_CHOICES)
+    measure_type = models.CharField(max_length=150, default=None, choices=TYPE_CHOICES)
     
     def __str__(self):
         return "%s Measure: " % self.name

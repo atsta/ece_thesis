@@ -10,6 +10,11 @@ class NewMeasureForm(forms.ModelForm):
 
         def get_measure(self):
             return self.model
+    def clean_lifetime(self):
+        lifetime = self.cleaned_data['lifetime']
+        if lifetime <= 0:
+            raise forms.ValidationError("Lifetime must be positive number")
+        return lifetime  
 
 class PerspectiveForm(forms.ModelForm):
     class Meta:
