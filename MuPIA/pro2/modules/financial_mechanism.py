@@ -139,8 +139,8 @@ class Esco():
     def initialize_criterion_params(self):
         if self.criterion_satisfaction == 'benefit_share':
             self.benefit_share_rate = 1
-        elif self.criterion_satisfaction == 'cost_esco':
-            self.cost_share_rate = 1
+        elif self.criterion_satisfaction == 'contract_period':
+            self.contract_period = 1
 
     def construct_benefits_df(self):
         esco_savings = []
@@ -204,12 +204,6 @@ class Esco():
         rounded_dpbp = round(dpbp, 2)
         dpbp = rounded_dpbp
         return dpbp
-
-    def get_cost_share(self):
-        self.cost_share_rate = self.sum_costs/self.costs['Equipment Cost'].sum() 
-        rounded_rate = round(self.cost_share_rate, 2)
-        self.cost_share_rate = rounded_rate
-        print(self.cost_share_rate)
     
     def get_benefit_share(self):
         self.benefit_share_rate = self.sum_benefits/self.benefits['Energy savings'].sum()
@@ -217,65 +211,71 @@ class Esco():
         self.benefit_share_rate = rounded_rate
         print(self.benefit_share_rate)
 
-    def calculate_flow_from_pbp(self):
-        pbp = int(self.criterion_value)
-        if self.criterion_satisfaction == "cost_esco":
-            new_cost = self.benefits.iloc[pbp-1]['Discounted Cash Flow']
-            self.cost_share_rate = new_cost/self.costs.iloc[pbp-1]['Discounted Cash Flow']
-        if self.criterion_satisfaction == "benefit_share":
-            new_benefit = self.costs.iloc[pbp-1]['Discounted Cash Flow']
-            self.benefit_share_rate = new_benefit/self.benefits.iloc[pbp-1]['Discounted Cash Flow']
+
+    def calc_cp(self):
+        sum = 0
+        self.contract_period = 0
+        while sum < self.sum_benefits and self.contract_period < len(self.energy_savings):
+            self.contract_period = self.contract_period + 1
+            sum = sum + self.energy_savings[self.contract_period-1]*self.benefit_share_rate
+        print(self.contract_period)
+    
+    def calc_cp_disc(self):
+        sum = 0
+        self.contract_period = 0
+        while sum < self.sum_benefits and self.contract_period < len(self.energy_savings):
+            self.contract_period = self.contract_period + 1
+            sum = sum + self.energy_savings[self.contract_period-1]*self.benefit_share_rate/(1+self.discount_rate)**(self.contract_period-1)
+        print(self.contract_period)
 
     def esco_criterion_satisfy(self):
-        if self.criterion == "npv":
-            if self.criterion_satisfaction == 'cost_esco':
-                self.sum_costs = self.benefits['Discounted Cash Flow'].sum() - self.criterion_value 
-                self.cost_share_rate = self.sum_costs/self.costs['Discounted Cash Flow'].sum() 
-                self.costs = pd.DataFrame([])
-                self.construct_cost_df()
-                print(self.cost_share_rate)            
-            else:
+        if self.criterion == "npv":          
+            if self.criterion_satisfaction == 'benefit_share':
                 self.sum_benefits = self.costs['Discounted Cash Flow'].sum() + self.criterion_value
                 self.benefit_share_rate = self.sum_benefits/self.benefits['Discounted Cash Flow'].sum()
+                rounded_rate = round(self.benefit_share_rate, 2)
+                self.benefit_share_rate = rounded_rate
                 self.benefits = pd.DataFrame([])
                 self.construct_benefits_df()
                 print(self.benefit_share_rate)
+            if self.criterion_satisfaction == 'contract_period':
+                self.sum_benefits = self.costs['Discounted Cash Flow'].sum() + self.criterion_value
+                self.calc_cp_disc()
+                self.benefits = pd.DataFrame([])
+                self.construct_benefits_df()
+
         if self.criterion == "b_to_c":
-            if self.criterion_satisfaction == 'cost_esco':
-                self.sum_costs = self.benefits['Energy savings'].sum()/self.criterion_value 
-                self.get_cost_share()
-                self.costs = pd.DataFrame([])
-                self.construct_cost_df()
-            else:
+            if self.criterion_satisfaction == 'benefit_share':
                 self.sum_benefits = self.costs['Equipment Cost'].sum()*self.criterion_value
                 self.get_benefit_share()
                 self.benefits = pd.DataFrame([])
                 self.construct_benefits_df()
+            if self.criterion_satisfaction == 'contract_period':
+                self.sum_benefits = self.costs['Equipment Cost'].sum()*self.criterion_value
+                self.calc_cp()
+                self.benefits = pd.DataFrame([])
+                self.construct_benefits_df()
 
         if self.criterion == "profit":
-            if self.criterion_satisfaction == 'cost_esco':
-                self.sum_costs = self.benefits['Energy savings'].sum()/(self.criterion_value + 1)
-                self.get_cost_share()
-                self.costs = pd.DataFrame([])
-                self.construct_cost_df()
-            else:
+            if self.criterion_satisfaction == 'benefit_share':
                 self.sum_benefits = self.costs['Equipment Cost'].sum()*(1+self.criterion_value)
                 self.get_benefit_share()
                 self.benefits = pd.DataFrame([])
                 self.construct_benefits_df()
-
-        if self.criterion == 'spbp':
-            self.calculate_flow_from_pbp()
-
+            if self.criterion_satisfaction == 'contract_period':
+                self.sum_benefits = self.costs['Equipment Cost'].sum()*(1+self.criterion_value)
+                self.calc_cp()
+                self.benefits = pd.DataFrame([])
+                self.construct_benefits_df()
     
     def measure_judgement(self):
-        self.cost_pv = self.costs['Discounted Cash Flow'].sum()
-        self.benefit_pv = self.benefits['Discounted Cash Flow'].sum()
-        self.npv = self.benefit_pv - self.cost_pv
-        self.b_to_c = self.benefit_pv/self.cost_pv  
-        self.irr =  irr = np.irr(self.pure_discounted_cash_flow)
-        self.pbp = self.calculate_simplePBP()
-        self.dpbp = self.calculate_discountedPBP()
+        self.cost_pv = round(self.costs['Discounted Cash Flow'].sum(), 2)
+        self.benefit_pv = round(self.benefits['Discounted Cash Flow'].sum(),2)
+        self.npv = round(self.benefit_pv - self.cost_pv, 2)
+        self.b_to_c = round(self.benefit_pv/self.cost_pv, 2)
+        self.irr = round(np.irr(self.pure_discounted_cash_flow), 2)
+        self.pbp = round(self.calculate_simplePBP(), 2)
+        self.dpbp = round(self.calculate_discountedPBP(), 2)
         sum1 = self.costs['Equipment Cost'].sum()
         if sum1 !=0 :
-            self.profit = (self.benefits['Energy savings'].sum() - self.costs['Equipment Cost'].sum())/sum1
+            self.profit = round((self.benefits['Energy savings'].sum() - self.costs['Equipment Cost'].sum())/sum1, 2)
