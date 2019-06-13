@@ -4,9 +4,17 @@ import pandas as pd
 
 
 class Subsidy():
+    """Class of Subsidy Mechanism.
+    """
     def __init__(self, measure, subsidy_rate):
+        """
+        Args:
+            measure (dictionary): contains measure attributes.
+            subsidy_rate (float): rate of subsidy of cost.
+        """
         self.measure = measure
         self.subsidy_rate = subsidy_rate
+        #: float: state cost based on subsidy rate
         self.state_cost = 0
 
         self.state_cost = self.measure['cost']*self.subsidy_rate*1.24
@@ -15,14 +23,33 @@ class Subsidy():
 
 
 class Tax_depreciation():
-    def __init__(self,tax_rate, tax_depreciation_rate, tax_lifetime):
+    """Class of Tax Depreciation Mechanism.
+    """
+    def __init__(self, tax_rate, tax_depreciation_rate, tax_lifetime):
+        """
+        Args:
+            tax_rate (float): annual tax rate.
+            tax_depreciation_rate (float): rate of tax depreciation.
+            tax_lifetime (int): how long this mechanish will last in analysis.
+        """
         self.tax_rate = tax_rate
         self.tax_depreciation_rate= tax_depreciation_rate
         self.tax_lifetime = tax_lifetime
 
 
 class Loan(): 
+    """Class of Loan Mechanism.
+    """
     def __init__(self, logistic_cost, loan_rate, annual_interest, subsidized_interest, loan_period, grace_period):
+        """
+        Args:
+            logistic_cost (float): initial cost that will be divided in loan amount and own funds amount.
+            loan (float): how much of the logistic cost will be in loan amount.
+            annual_interest (float): annual interest rate of loan.
+            subsidizes_interest (float): annual subsidized interest rate of loan.
+            loan_period (int): period that loan lasts. 
+            grace_period (int): grace period of the repayment process. 
+        """       
         self.logistic_cost = logistic_cost #with taxes
         self.loan_rate = loan_rate
         self.annual_interest = annual_interest
@@ -40,32 +67,39 @@ class Loan():
         self.grace_period_tokos = self.annual_interest*self.grace_period*self.loan_fund
         self.repayment_amount = self.loan_fund + self.grace_period_tokos
 
-        #tok/ki dosi ana etos danismou
+        #: float: tok/ki dosi ana etos danismou
         self.interest_rate_instalment = []
         self.interest_rate_instalment.append(0)
 
-        #xreolisio ana etos danismou
+        #: float: xreolisio ana etos danismou
         self.interest_rate = []
         self.interest_rate.append(0)
 
-        #tokos
+        #: float: tokos
         self.interest = []
         self.interest.append(0)
 
-        #epidotisi tokou 
+        #: float: epidotisi tokou 
         self.interest_subsidy = []
         self.interest_subsidy.append(0)
 
-        #tokos pliroteos 
+        #: float: tokos pliroteos 
         self.interest_paid = []
         self.interest_paid.append(0)
 
-        #aneksoflito ipolipo
+        #: float: aneksoflito ipolipo
         self.unpaid = []
         self.unpaid.append(self.repayment_amount)
-        
-        sum_xreolisio = 0
 
+        self.calculate_return_specs()
+
+    def calculate_return_specs(self):
+        """
+            Calculate the necessary attributes for the loan repayment process.
+            Each element is represented by a list of floats and contains the relevant annual values.
+        """
+
+        sum_xreolisio = 0
         for year in range(1, self.loan_period+1):
             self.interest_rate_instalment.append(-np.pmt(self.annual_interest, self.loan_period, self.repayment_amount, 0))
             self.interest_rate.append(-np.ppmt(self.annual_interest, year, self.loan_period, self.repayment_amount))
@@ -81,6 +115,10 @@ class Loan():
             self.unpaid.append(self.unpaid[year-1] - self.interest_rate[year])
 
     def calculate_loan_period(self):
+        """
+            If user does not enter a specific loan period, 
+            it is calculated based on the condition statement below. 
+        """
         if self.loan_fund < 15000: 
             self.loan_period = 3
         else: 
