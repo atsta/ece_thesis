@@ -181,17 +181,25 @@ def grab_params_and_give_results(request):
 
 def social_result_page(request):
         
-        return render(request, 'app2/scba_result_page.html')
+        return render(request, 'app2/fcba_params_results.html')
 
-def financial_result_page(request):
+
+def fcba_params_results(request):
         selected = request.session['list']
         benefits = request.session['benefits'] 
         costs = request.session['costs']
         article = request.session['article']
-        discount_rate = request.session['discount_rate']
         lifetime = request.session['lifetime']
 
-        
+
+        discount_rate = request.POST.get('discount_rate')
+        if discount_rate == '':
+                return render(request, 'app2/fcba_params_results.html')
+
+        else: 
+                discount_rate = float(discount_rate)/100
+
+
         an = []
         fin = {}
         pieces = []
@@ -231,6 +239,9 @@ def financial_result_page(request):
 
         return render(request, 'app2/fcba_result_page.html', {'analysis': an})
 
+def financial_result_page(request):
+        
+        return render(request, 'app2/fcba_result_page.html')
 
 #investment analysis views
 

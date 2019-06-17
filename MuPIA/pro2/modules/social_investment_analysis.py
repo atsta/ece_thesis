@@ -13,8 +13,21 @@ conn_string = "host='localhost' dbname='energy_db' user='postgres' password='454
 conn = psycopg2.connect(conn_string)
 
 class Social():   
-
+    """Class of Social Investment CBA.
+    """
     def __init__(self, measure, energy_conservation, energy_price, energy_price_growth_rate, selected_costs,selected_benefits, analysis_period, discount_rate):
+        """
+        Args:
+            measure (dict): name of the examined measure.
+            energy_conservation (dict) : conservation of the examined measure.
+            energy_price (dict): energy price without taxes due to social analysis.
+            energy_price_growth_rate (dict): growth rate of energy price.
+            selected_costs (list of str): costs that take part in the analysis, selected by the user.
+            selected_benefits (list of str): benefits that take part in the analysis, selected by the user.
+            analysis_period (int)
+            discount_rate (float)
+        """
+
         self.measure = measure
         self.energy_conservation = energy_conservation
         self.energy_price = energy_price
@@ -202,7 +215,10 @@ class Social():
         if self.energy_conservation["biomass"] > 0:
             num_ratios = num_ratios +1 
             sum_ratios = sum_ratios + self.energy_price_growth_rate["biomass"]
-        self.avg_ratios = sum_ratios/num_ratios 
+        if num_ratios > 0 : 
+            self.avg_ratios = sum_ratios/num_ratios 
+        else: 
+            self.avg_ratios = 0
 
 
     def calculate_simplePBP(self):

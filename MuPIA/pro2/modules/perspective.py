@@ -80,8 +80,25 @@ class Loan():
     
 
 class Perspective():   
-    
+    """Class of Perspective Investment Analysis.
+    """
     def __init__(self, measure, energy_conservation, energy_price, energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, subsidy, loan, esco, tax_depreciation):
+        """
+        Args:
+            measure (dict): name of the examined measure.
+            energy_conservation (dict) : conservation of the examined measure.
+            energy_price (dict): energy price with taxes.
+            energy_price_growth_rate (dict): growth rate of energy price.
+            selected_costs (list of str): costs that take part in the analysis, selected by the user.
+            selected_benefits (list of str): benefits that take part in the analysis, selected by the user.
+            analysis_period (int)
+            discount_rate (float)
+            subsidy (class instance of Subsidy)
+            loan (class instance of Loan) 
+            esco (class instance of Esco) 
+            tax_depreciation (class instance of Tax_Depreciation)
+        """
+
         self.measure = measure
         self.energy_conservation = energy_conservation
         self.energy_price = energy_price

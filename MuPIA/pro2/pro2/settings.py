@@ -15,8 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
-DOCS_ROOT = os.path.join(BASE_DIR, '../docs/_build/html')
-DOCS_ACCESS = 'staff'
 #MODULES_DIR = os.path.join(BASE_DIR, 'modules')
 
 # Quick-start development settings - unsuitable for production
@@ -42,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'app2',
     'widget_tweaks',
-    'docs',
 ]
 
 MIDDLEWARE = [

@@ -30,7 +30,7 @@ class Tax_depreciation():
         Args:
             tax_rate (float): annual tax rate.
             tax_depreciation_rate (float): rate of tax depreciation.
-            tax_lifetime (int): how long this mechanish will last in analysis.
+            tax_lifetime (int): how long this mechanism lasts in analysis.
         """
         self.tax_rate = tax_rate
         self.tax_depreciation_rate= tax_depreciation_rate

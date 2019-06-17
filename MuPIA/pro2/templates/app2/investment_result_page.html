@@ -5,15 +5,79 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title>Results</title>
         <style>
+            body {
+                margin:0;
+                font-family: sans-serif;
+                text-align: center;
+                background-color: rgb(238, 221, 200);
+                color: #4a4a4d;
+            }
+            ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background-color: rgb(94, 92, 92);
+                position: fixed;
+                top: 0;
+                width: 100%;
+            }
+
+            li {
+                float: left;
+            }
+
+            li a {
+                display: block;
+                color: white;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+
+            li a:hover:not(.active) {
+                background-color: rgb(109, 108, 108);
+            }
+            .heading {
+                font-weight: bold;
+                border-bottom: 2px solid rgb(187, 186, 186);
+                display: inline-block;
+                padding-bottom: 10px;
+                margin-top: 20px;
+                margin-bottom: 10px;
+                font-size: 28px;
+            } 
+            form {
+                text-align: right;
+                margin-right: 50px;
+                margin-top: 10px;
+            }
+
+
         </style>
     </head>
     <body>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/measure">Search Measure</a></li>
+        </ul>
+        <br>
+        <br>
+        <br>
+        <div class="heading">
+                Investment Analysis Results 
+                <!--<p>for each selected measure</p>-->
+            </div>
+        <br>
         {% for item in analysis %}
-            <h2>Investment Analysis for: {{ item.measure }}</h2>
+            <h2>{{ item.measure }}</h2>
             <p>NPV: {{ item.npv}}</p>
             <p>IRR: {{ item.irr}}</p>
             <p>Discounted Payback Period: {{ item.dpbp}}</p>
             <br>
         {% endfor %}
+        <br>
+        <br>
+       
     </body>
 </html>
