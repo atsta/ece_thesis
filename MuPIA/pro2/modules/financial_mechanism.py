@@ -203,7 +203,7 @@ class Esco():
     def construct_cost_df(self):
         initial_cost = []
         if self.loan.loan_fund > 0:
-            esco_loan = Loan(self.measure['cost']*self.cost_share_rate*1.24, self.loan.loan_rate, self.loan.annual_interest, self.loan.subsidized_interest,self.loan.loan_period, self.loan.grace_period)
+            esco_loan = Loan(self.measure['cost']*self.cost_share_rate, self.loan.loan_rate, self.loan.annual_interest, self.loan.subsidized_interest,self.loan.loan_period, self.loan.grace_period)
         
         for year in range(len(self.energy_savings)):
             if self.loan.loan_fund == 0:

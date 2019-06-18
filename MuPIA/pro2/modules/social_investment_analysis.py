@@ -159,6 +159,14 @@ class Social():
                 my_rounded_list = [ round(elem, 2) for elem in maintenance]
                 maintenance = my_rounded_list
                 self.benefits['Maintenance'] = maintenance
+            if item == 'externalities':
+                val = self.get_benefit("externalities")
+                ext = []
+                for year in range(self.analysis_period):
+                    ext.append(val)
+                my_rounded_list = [ round(elem, 2) for elem in ext]
+                ext = my_rounded_list
+                self.benefits['Extenalities'] = ext
             if item == 'residual_value':
                 my_rounded_list = [ round(elem, 2) for elem in self.residual_value]
                 self.residual_value = my_rounded_list
@@ -192,7 +200,7 @@ class Social():
         flow = []
         sum_costs = self.costs.sum(axis=1)
         for year in range(self.analysis_period):
-            self.pure_cash_flow[year] = self.pure_cash_flow[year] - sum_costs[year]
+            self.pure_cash_flow[year] = round(self.pure_cash_flow[year] - sum_costs[year], 2)
             flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
         my_rounded_list = [ round(elem, 2) for elem in flow ]
         self.costs['Discounted Cash Flow'] = my_rounded_list

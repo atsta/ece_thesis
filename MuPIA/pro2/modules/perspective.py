@@ -159,8 +159,9 @@ class Perspective():
         
         self.calculate_residual_value()
 
+        self.tax_depreciation_per_year = []
+
         if tax_depreciation.tax_lifetime > 0:
-            self.tax_depreciation_per_year = []
             self.calculate_tax_depreciation()
 
         self.equipment_cost = []
@@ -243,7 +244,7 @@ class Perspective():
     def calculate_residual_value(self):
         for year in range(self.analysis_period):
             if year == self.analysis_period -1:
-                self.residual_value.append((2*self.measure['lifetime']-self.analysis_period)*self.logistic_cost_without_taxes*1.24/self.measure['lifetime'])
+                self.residual_value.append((2*self.measure['lifetime']-self.analysis_period)*self.logistic_cost_without_taxes/self.measure['lifetime'])
             else: 
                 self.residual_value.append(0)
 
@@ -326,7 +327,7 @@ class Perspective():
         flow = []
         sum_costs = self.costs.sum(axis=1)
         for year in range(self.analysis_period):
-            self.pure_cash_flow[year] = self.pure_cash_flow[year] - sum_costs[year]
+            self.pure_cash_flow[year] = round(self.pure_cash_flow[year] - sum_costs[year], 2)
             flow.append(sum_costs[year]/(1.0 + self.discount_rate)**year)
         my_rounded_list = [ round(elem, 2) for elem in flow ]
         self.costs['Discounted Cash Flow'] = my_rounded_list
