@@ -9,6 +9,17 @@ import decimal
 import matplotlib.pyplot as plt
 import numpy as np
 
+
+import tkinter as tk
+from tkinter import filedialog
+from pandas import DataFrame
+
+def exportCSV (df):
+    
+    export_file_path = filedialog.asksaveasfilename(defaultextension='.csv')
+    df.to_csv (export_file_path, index = None, header=True)
+
+
 def main():
 #temporarily tertiary prices
     energy_price_with_taxes = {
@@ -117,6 +128,17 @@ def main():
     print(p.pbp)
     print(esco_actor.benefit_share_rate)
 
+
+    #root= tk.Tk()
+
+    #canvas1 = tk.Canvas(root, width = 300, height = 300, bg = 'lightsteelblue2', relief = 'raised')
+    #canvas1.pack()
+
+    saveAsButton_CSV = tk.Button(text='Export CSV', command=exportCSV(p.benefits), bg='green', fg='white', font=('helvetica', 12, 'bold'))
+    #canvas1.create_window(150, 150, window=saveAsButton_CSV)
+
+    #root.mainloop()
+
     # #gia na doso logistic cost daneiou elegho an ehei parei epidotisi
     # if sub.subsidy_rate > 0:
     #     logistic_cost = measure_sample['cost']*1.24*(1-sub.subsidy_rate)
@@ -161,6 +183,7 @@ def main():
     # print(h[1])
     # print(result_b_to_c)
     # print(len(result_b_to_c), len(h[0]))
+    
 
 if __name__ == "__main__":
     main()
