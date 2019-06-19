@@ -12,6 +12,9 @@
                 background-color: rgb(238, 221, 200);
                 color: #4a4a4d;
             }
+            .box{
+                float: middle;            
+                }
             ul {
                 list-style-type: none;
                 margin: 0;
@@ -55,11 +58,7 @@
                 margin-bottom: 10px;
                 font-size: 28px;
             } 
-            form {
-                text-align: right;
-                margin-right: 50px;
-                margin-top: 10px;
-            }
+  
 
 
         </style>
@@ -86,6 +85,15 @@
             <p>IRR: {{ item.irr}}</p>
             <p>Discounted Payback Period: {{ item.dpbp}}</p>
             <br>
+            <div class="box">
+            <form  action="{% url 'investment_result_page' %}" method="POST">
+                {% csrf_token %}
+                <input name={{item.measure}} type="submit" class="btn btn-primary" value="export inflows to csv">            
+                <input name="cost" type="submit" class="btn btn-primary" value="export outflows to csv">            
+            </form>
+        </div>
+        <br>
+        <br>
         {% endfor %}
         <br>
         <br>

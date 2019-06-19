@@ -28,7 +28,11 @@
         <div class="heading">Enter Sensitivity Analysis Parameters</div>
         <br>
         <br>
-        {{form.as_p}}
-        <input type="submit" class="btn btn-primary" value="OK">
+        <form method="POST">
+            {% csrf_token %}
+
+            {{form.as_p}}
+            <input type="submit" class="btn btn-primary" value="OK">
+        </form>
     </body>
 </html>

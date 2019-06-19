@@ -1,5 +1,7 @@
 from django.shortcuts import render
 
+from django.http import HttpResponse
+
 from app2.forms import SensitiveForm, NewMeasureForm, MechForm1, MechForm2, MechForm3, MechForm4, LoanForm, FactorForm, ContractForm, ProfitInput, NPVInput, BCInput,  BenefitSatisfy, PeriodSatisfy, EscoLoan, SubsidyForm
 from . import forms
 
@@ -9,6 +11,13 @@ from modules import energy_measure, financial_mechanism, perspective, social_inv
 
 import string
 import random
+import pandas as pd
+import tkinter as tk
+from tkinter import filedialog
+import json
+from pandas.io.json import json_normalize
+import numpy as np
+import matplotlib.pyplot as plt
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
@@ -557,6 +566,8 @@ def investment_analysis_results(request):
         persp = {}
         an = []
         pieces = []
+        dfs = {}
+        cdfs = {}
         for item in selected_measures:
                 hip = Measure.objects.get(name=item)
                 if article == 'art3':
@@ -681,20 +692,207 @@ def investment_analysis_results(request):
                 print(per.benefits)
                 print("Actor Costs")
                 print(per.costs)
+                dfs[item] = per.benefits
+                cdfs[item] = per.costs
         op = Portfolio(name=id_generator(), genre ='perspective', analysis_pieces=pieces)
         op.save()
-                
+        for item in selected_measures:
+                dfs[item] = dfs[item].to_json(orient='table')
+                cdfs[item] = cdfs[item].to_json(orient='table')
+
+        request.session['dfs'] = dfs  
+        request.session['cdfs'] = cdfs  
+
         return render(request, 'app2/investment_result_page.html', {'analysis':an})
 
+def exportCSV (df):
+    
+    export_file_path = filedialog.asksaveasfilename(defaultextension='.csv')
+    df.to_csv (export_file_path, index = None, header=True)
+
 def investment_result_page(request):
-        #for item in selected_measures:
-                
+        selected_measures = request.session['list']
+        dfs = request.session['dfs'] 
+        cdfs = request.session['cdfs'] 
+
+        if request.method == 'POST':
+                for item in selected_measures: 
+                        if request.POST.get(item):
+                                data = dfs[item]
+                                df =  pd.read_json(data, orient='table')
+                                print(df)
+                                saveAsButton_CSV = tk.Button(text='Export CSV', command=exportCSV(df), bg='green', fg='white', font=('helvetica', 12, 'bold'))
+                                return HttpResponse(" ")
+                        else: 
+                                data = cdfs[item]
+                                df =  pd.read_json(data, orient='table')
+                                print(df)
+                                saveAsButton_CSV = tk.Button(text='Export CSV', command=exportCSV(df), bg='green', fg='white', font=('helvetica', 12, 'bold'))
+                                return HttpResponse(" ")
+        
         return render(request, 'app2/investment_result_page.html')
 
 def sensitivity(request):
         form = SensitiveForm()
+        if request.method == "POST":
+                form = SensitiveForm(request.POST)
+                if form.is_valid():
+                        a =  form.cleaned_data['a']
+                        b =  form.cleaned_data['b']
+                        c = form.cleaned_data['c']
+                        var = form.cleaned_data['variable']
+                        index = form.cleaned_data['indices']
+                        print(a)
 
+
+
+                        max_period = 0
+                        analysis_period = request.session['inv_analysis_period'] 
+                        discount_rate = request.session['inv_discount_rate']
+                        article = request.session['article']
+                        selected_measures = request.session['list']
+                        selected_benefits = request.session['benefits_dict']
+                        selected_costs = request.session['costs'] 
+                        mechanism = request.session['mechanism']
+                        give_lifetime_as_period = 0
+                        if analysis_period == 0:
+                                give_lifetime_as_period = 1
+
+                        analysis_period = int(analysis_period)
+        
+                        persp = {}
+                        an = []
+                        pieces = []
+                        dfs = {}
+                        cdfs = {}
+                        for item in selected_measures:
+                                if article == 'art3':
+                                        m = energy_measure.Measure(item, 3)
+                                else:
+                                        m = energy_measure.Measure(item, 7)
+
+                                if give_lifetime_as_period == 1:
+                                        analysis_period = m.specs['lifetime']
+                
+   
+
+                                sub = financial_mechanism.Subsidy(m.specs, 0.0)
+                                tax = financial_mechanism.Tax_depreciation(0.0, 0.0, 0)
+                                ln = financial_mechanism.Loan(0,0,0,0,0,0)
+                                esco = financial_mechanism.Esco(m.specs, [], 0, " ",0, " ", 0, 0, 0, 0, ln)
+                                for submech in mechanism:
+                                        if submech == 'subsidy':
+                                                sub_rate = request.session['subsidy']
+                                                sub = financial_mechanism.Subsidy(m.specs, sub_rate)
+                                        if submech == 'loan':
+                                                loan_rate = request.session['lr']
+                                                annual_interest = request.session['ar'] 
+                                                subsidized_interest = request.session['sr'] 
+                                                loan_period = request.session['lp']
+                                                grace_period = request.session['gp'] 
+                                                if loan_period > max_period:
+                                                        max_period = loan_period
+                                                for it in mechanism:
+                                                        if it == "subsidy":
+                                                                sub_rate = request.session['subsidy']
+                                                                logistic_cost = m.specs['cost']*1.24*(1-sub_rate)
+                                                                break
+                                                        else:
+                                                                logistic_cost = measure_sample['cost']*1.24
+                                                ln = financial_mechanism.Loan(logistic_cost, loan_rate, annual_interest, subsidized_interest, loan_period, grace_period)
+                                        if submech == 'increase_factor':
+                                                depreciation_tax_rate  = request.session['tax_rate']  
+                                                tax_lifetime =  request.session['tax_lifetime'] 
+                                                tax = financial_mechanism.Tax_depreciation(0.25, depreciation_tax_rate, tax_lifetime)
+                                                if tax_lifetime > max_period:
+                                                        max_period = tax_lifetime
+                                for submech in mechanism:
+                                        if submech == 'energy_contract':
+                                                per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
+                                                savings = per.benefits['Energy savings']
+                                                avg_ratios = per.avg_ratios
+
+                                                esco_disc_rate = request.session['esco_disc_rate']
+                                                criterion = request.session['esco_criterion'] 
+                                                criterion_satisfaction = request.session['esco_criterion_satisfaction'] 
+                                                took_loan = request.session['took_loan']
+
+                                                if took_loan == 'esco_loan':
+                                                        loan_rate = request.session['esco_lr'] 
+                                                        annual_rate = request.session['esco_ar']  
+                                                        subsidized_interest = request.session['esco_sr'] 
+                                                        loan_period = request.session['esco_lp']
+                                                        if loan_period > max_period:
+                                                                max_period = loan_period 
+                                                        grace_period = request.session['esco_gp']
+                                                        if criterion_satisfaction == 'cost_esco':
+                                                                esco_loan = financial_mechanism.Loan(m.specs['cost']*1.24 ,loan_rate, annual_rate, subsidized_interest, loan_period, grace_period )
+                                                        else:
+                                                                cost_share = request.session['cost_share']
+                                                                esco_loan = financial_mechanism.Loan(cost_share*m.specs['cost']*1.24, loan_rate, annual_rate, subsidized_interest, loan_period, grace_period )
+                                                else:
+                                                        esco_loan = financial_mechanism.Loan(0,0,0,0,0,0)
+                                                if criterion == 'profit':
+                                                        cr_val = request.session['esco_profit']
+                                                if criterion == 'spbp':
+                                                        cr_val = request.session['esco_spbp'] 
+                                                if criterion == 'dpbp':
+                                                        cr_val = request.session['esco_irr'] 
+                                                if criterion_satisfaction == 'contract_period':
+                                                        cost_esco_rate = request.session['cost_share']
+                                                        benefit_share_rate = request.session['benefit_share'] 
+                                                        esco = financial_mechanism.Esco(m.specs, savings, avg_ratios, criterion, cr_val, criterion_satisfaction, esco_disc_rate, cost_esco_rate, benefit_share_rate, 0, esco_loan)
+                                                if criterion_satisfaction == 'benefit_share':
+                                                        cost_esco_rate = request.session['cost_share']
+                                                        contract_period = request.session['esco_period']
+                                                        if contract_period  > max_period:
+                                                                max_period = contract_period 
+                                                        esco = financial_mechanism.Esco(m.specs, savings, int(avg_ratios), criterion, int(cr_val), criterion_satisfaction, float(esco_disc_rate), float(cost_esco_rate), 1,int(contract_period) , esco_loan)
+                                                        if esco.benefit_share_rate > 1: 
+                                                                print("Error:Benefit Share should be less than 100%")
+                                                                form1 = ContractForm()
+                                                                return render(request, 'app2/esco.html', {'form1': form1})
+
+                                                print("Esco Benefits:")
+                                                print(esco.benefits)
+                                                print("Esco Costs:")
+                                                print(esco.costs)
+                
+                                if analysis_period < max_period:
+                                        #error handling
+                                        print("Analysis Period should be bigger than"+ max_period)
+                                        return render(request, 'app2/investment_analysis_results.html')
+                                p = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
+                                
+                                
+                                h = plt.hist(np.random.triangular(0.02, 0.05, 0.1, 1000000), bins=100, density=True)    
+                                results = []
+                
+                                for val in h[1]:
+                                        if var == 'disc':
+                                                p = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, val, sub, ln, esco, tax)
+
+                                                if index == 'bc':
+                                                        results.append(p.b_to_c)
+                                                if index == 'npv':
+                                                        results.append(p.npv)
+                                                if index == 'irr':
+                                                        results.append(p.irr)
+                                                if index == 'pbp':
+                                                        results.append(p.dpbp)
+                                        if var =='period':
+                                                p = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, val, discount_rate, sub, ln, esco, tax)
+                                                if index == 'bc':
+                                                        results.append(p.b_to_c)
+                                                if index == 'npv':
+                                                        results.append(p.npv)
+                                                if index == 'irr':
+                                                        results.append(p.irr)
+                                                if index == 'pbp':
+                                                        results.append(p.dpbp)                  
+                                print(results)
+                # #print(h[0])
+                # print(h[1])
+                # print(result_b_to_c)
         return render(request, 'app2/sensitivity.html', {'form': form})
-
-
 
