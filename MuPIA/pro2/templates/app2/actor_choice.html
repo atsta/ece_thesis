@@ -183,14 +183,10 @@
         <div class="heading">
             Find measures for your portfolio
         </div>
+        <br>
         <div class="box">
             <form class="form-inline" method="POST" action='{% url "measure_search_results_investment" %}'>
                 {% csrf_token %}
-                <p>Decision Maker:</p>
-                <select name="actor">
-                    <option value="country" selected>Country</option>
-                    <option value="eeos">EEOS</option>
-                </select>
                 <p>Calculate energy conservation based on:</p>
                 <select name="article">
                         <option value="art3" selected>Article 3</option>

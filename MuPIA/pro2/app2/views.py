@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from app2.forms import NewMeasureForm, MechForm1, MechForm2, MechForm3, MechForm4, LoanForm, FactorForm, ContractForm, ProfitInput, IrrInput, SInput, DInput, BenefitSatisfy, CostStatisfy, PeriodSatisfy, EscoLoan, SubsidyForm
+from app2.forms import SensitiveForm, NewMeasureForm, MechForm1, MechForm2, MechForm3, MechForm4, LoanForm, FactorForm, ContractForm, ProfitInput, NPVInput, BCInput,  BenefitSatisfy, PeriodSatisfy, EscoLoan, SubsidyForm
 from . import forms
 
 from app2.models import Perspective, Esco, Measure, Social, Financial, Energy_Conservation, Costs, Benefits, Portfolio
@@ -394,8 +394,14 @@ def financial_mechanism_params(request):
                                 form1 = LoanForm(request.POST)
                                 if form1.is_valid():
                                         loan_rate = form1.cleaned_data['loan_rate'] 
+                                        loan_rate = float(loan_rate)/100
                                         annual_interest = form1.cleaned_data['annual_rate']
+                                        annual_interest = float(annual_interest)/100
                                         subsidized_interest = form1.cleaned_data['subsidized_interest_rate']
+                                        subsidized_interest = float(subsidized_interest)/100
+                                        print(loan_rate)
+                                        print(annual_interest)
+                                        print(subsidized_interest)
                                         loan_period = form1.cleaned_data['loan_period'] 
                                         grace_period = form1.cleaned_data['grace_period']
                                         request.session['lr'] = loan_rate
@@ -408,14 +414,18 @@ def financial_mechanism_params(request):
                                 form2 = FactorForm(request.POST)
                                 if form2.is_valid():
                                         depreciation_tax_rate = form2.cleaned_data["depreciation_tax_rate"]
+                                        depreciation_tax_rate = float(depreciation_tax_rate)/100
                                         tax_lifetime = form2.cleaned_data["tax_lifetime"]
                                         request.session['tax_rate'] = depreciation_tax_rate  
                                         request.session['tax_lifetime'] = tax_lifetime
+                                        print(depreciation_tax_rate)
+                                        print(tax_lifetime)
                 if item == 'subsidy':
                         if request.method == "POST":
                                 form3 = SubsidyForm(request.POST)
                                 if form3.is_valid():
                                         sub_rate = form3.cleaned_data["subsidy_rate"]
+                                        sub_rate = float(sub_rate)/100
                                         print(sub_rate)
                                         request.session['subsidy'] = sub_rate
         if esco == 0: 
@@ -431,6 +441,7 @@ def esco_params(request):
                 print(esco_loan)
                 if form1.is_valid():
                         esco_disc_rate = form1.cleaned_data['discount_rate']
+                        esco_disc_rate = float(esco_disc_rate)/100
                         request.session['esco_disc_rate'] = esco_disc_rate
                         criterion = form1.cleaned_data['chosen_criterion']
                         request.session['esco_criterion'] = criterion
@@ -438,12 +449,10 @@ def esco_params(request):
                         print(criterion)
                         if criterion == 'profit':
                                 form2 = ProfitInput() 
-                        if criterion == 'irr':
-                                form2 = IrrInput()
-                        if criterion == 'spbp':
-                                form2 = SInput()
-                        if criterion == 'dpbp':
-                                form2 = DInput()
+                        if criterion == 'npv':
+                                form2 = NPVInput()
+                        if criterion == 'b_to_c':
+                                form2 = BCInput()
 
                         criterion_satisfaction = form1.cleaned_data['criterion_satisfaction']
                         request.session['esco_criterion_satisfaction'] = criterion_satisfaction
@@ -453,8 +462,6 @@ def esco_params(request):
                                 form3 = PeriodSatisfy() 
                         if criterion_satisfaction == 'benefit_share':
                                 form3 = BenefitSatisfy()
-                        if criterion_satisfaction == 'cost_esco':
-                                form3 = CostStatisfy()
 
                         if esco_loan == 'esco_loan':
                                 request.session['took_loan'] = esco_loan
@@ -473,50 +480,47 @@ def grab_esco_params(request):
                         form2 = ProfitInput(request.POST) 
                         if form2.is_valid():
                                 esco_profit = form2.cleaned_data['profit']
+                                esco_profit = float(esco_profit)/100
                                 request.session['esco_profit'] = esco_profit
-                if criterion == 'irr':
-                        form2 = IrrInput(request.POST)
+                if criterion == 'npv':
+                        form2 = NPVInput(request.POST)
                         if form2.is_valid():
-                                esco_irr = form2.cleaned_data['irr']
-                                request.session['esco_irr'] = esco_irr
-                if criterion == 'spbp':
-                        form2 = SInput(request.POST)
+                                esco_npv = form2.cleaned_data['npv']
+                                request.session['esco_npv'] = esco_npv
+                if criterion == 'b_to_c':
+                        form2 = BCInput(request.POST)
                         if form2.is_valid():
-                                esco_spbp = form2.cleaned_data['spbp']
-                                request.session['esco_spbp'] = esco_spbp
-                if criterion == 'dpbp':
-                        form2 = DInput(request.POST)
-                        if form2.is_valid():
-                                esco_dpbp = form2.cleaned_data['dpbp']
-                                request.session['esco_irr'] = esco_dpbp
+                                esco_bc = form2.cleaned_data['b_to_c']
+                                request.session['esco_bc'] = esco_bc
 
                 if criterion_satisfaction == 'contract_period':
                         form3 = PeriodSatisfy(request.POST) 
                         if form3.is_valid():
                                 cost_esco_rate = form3.cleaned_data['cost_esco_rate']
+                                cost_esco_rate = float(cost_esco_rate)/100
                                 benefit_share_rate = form3.cleaned_data['benefit_share_rate']
+                                benefit_share_rate = float(benefit_share_rate)/100
                                 request.session['cost_share'] = cost_esco_rate
                                 request.session['benefit_share'] = benefit_share_rate
                 if criterion_satisfaction == 'benefit_share':
                         form3 = BenefitSatisfy(request.POST)
                         if form3.is_valid():
                                 cost_esco_rate = form3.cleaned_data['cost_esco_rate']
+                                cost_esco_rate = float(cost_esco_rate)/100
                                 contract_period = form3.cleaned_data['contract_period']
                                 request.session['cost_share'] = cost_esco_rate
+
                                 request.session['esco_period'] = contract_period
-                if criterion_satisfaction == 'cost_esco':
-                        form3 = CostStatisfy(request.POST)
-                        if form3.is_valid():
-                                contract_period = form3.cleaned_data['contract_period']
-                                benefit_share_rate = form3.cleaned_data['benefit_share_rate']
-                                request.session['esco_period'] = contract_period
-                                request.session['benefit_share'] = benefit_share_rate
+
                 if took_loan == 'esco_loan':
                         form4 = EscoLoan(request.POST)
                         if form4.is_valid():
                                 loan_rate = form4.cleaned_data['loan_rate'] 
+                                loan_rate = float(loan_rate)/100
                                 annual_rate = form4.cleaned_data['annual_rate']
+                                annual_rate = float(annual_rate)/100
                                 subsidized_interest = form4.cleaned_data['subsidized_interest_rate']
+                                subsidized_interest = float(subsidized_interest)/100
                                 loan_period = form4.cleaned_data['loan_period'] 
                                 grace_period = form4.cleaned_data['grace_period']
                                 request.session['esco_lr'] = loan_rate
@@ -597,7 +601,7 @@ def investment_analysis_results(request):
                                         max_period = tax_lifetime
                 for submech in mechanism:
                         if submech == 'energy_contract':
-                                per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs[item], selected_benefits[item], analysis_period, discount_rate, sub, ln, esco, tax)
+                                per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
                                 savings = per.benefits['Energy savings']
                                 avg_ratios = per.avg_ratios
 
@@ -637,19 +641,20 @@ def investment_analysis_results(request):
                                         if contract_period  > max_period:
                                                 max_period = contract_period 
                                         esco = financial_mechanism.Esco(m.specs, savings, int(avg_ratios), criterion, int(cr_val), criterion_satisfaction, float(esco_disc_rate), float(cost_esco_rate), 1,int(contract_period) , esco_loan)
-                                if criterion_satisfaction == 'cost_esco':
-                                        contract_period = request.session['esco_period'] 
-                                        if contract_period  > max_period:
-                                                max_period = contract_period 
-                                        benefit_share_rate = request.session['benefit_share'] 
-                                        esco= financial_mechanism.Esco(m.specs, savings, avg_ratios, criterion, cr_val, criterion_satisfaction, esco_disc_rate, 1, benefit_share_rate, contract_period, esco_loan)
+                                        if esco.benefit_share_rate > 1: 
+                                                print("Error:Benefit Share should be less than 100%")
+                                                form1 = ContractForm()
+                                                return render(request, 'app2/esco.html', {'form1': form1})
+
                                 print("Esco Benefits:")
                                 print(esco.benefits)
                                 print("Esco Costs:")
                                 print(esco.costs)
                 
+                print(analysis_period)
                 if analysis_period < max_period:
                         #error handling
+                        print("Analysis Period should be bigger than"+ max_period)
                         return render(request, 'app2/investment_analysis_results.html')
                 per = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
                 
@@ -685,6 +690,11 @@ def investment_result_page(request):
         #for item in selected_measures:
                 
         return render(request, 'app2/investment_result_page.html')
+
+def sensitivity(request):
+        form = SensitiveForm()
+
+        return render(request, 'app2/sensitivity.html', {'form': form})
 
 
 

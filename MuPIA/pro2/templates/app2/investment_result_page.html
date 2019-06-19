@@ -27,6 +27,10 @@
                 float: left;
             }
 
+            .sens {
+                float: right;
+            }
+
             li a {
                 display: block;
                 color: white;
@@ -38,6 +42,10 @@
             li a:hover:not(.active) {
                 background-color: rgb(109, 108, 108);
             }
+            
+            .active {
+                background-color: rgb(167, 114, 92);
+            }  
             .heading {
                 font-weight: bold;
                 border-bottom: 2px solid rgb(187, 186, 186);
@@ -60,6 +68,9 @@
         <ul>
             <li><a href="/">Home</a></li>
             <li><a href="/measure">Search Measure</a></li>
+            <div class="sens">
+                <li><a href="/sensitivity" class="active" >Sensitivity Analysis</a></li>
+            </div>
         </ul>
         <br>
         <br>

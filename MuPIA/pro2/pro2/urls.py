@@ -41,5 +41,6 @@ urlpatterns = [
     url(r'^scba_result_page/', views.social_result_page, name='scba_result_page'),
     url(r'^fcba_params_results/', views.fcba_params_results, name='fcba_params_results'),
     url(r'^fcba_result_page/', views.financial_result_page, name='fcba_result_page'),
+    url(r'^sensitivity/', views.sensitivity, name='sensitivity'),
 
 ]

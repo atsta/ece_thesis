@@ -32,30 +32,26 @@ class SomeInput(forms.Form):
     analysis = forms.CharField(max_length=15)
 
 MECHANISM1_CHOICES = (
-    ('subsidy', 'Subsidy'),
-    ("tax_exemption", "Tax Exemption"), 
+    ('subsidy', 'Subsidy/Tax Exemption'),
     ("loan", "Loan of beneficiary"),
     ("increase_factor", "Increase of depreciation factor of fixed assets"),
     ("energy_contract", "Energy Contract"),
 )
 
 MECHANISM2_CHOICES = (
-    ('subsidy', 'Subsidy'),
-    ("tax_exemption", "Tax Exemption"), 
+    ('subsidy', 'Subsidy/Tax Exemption'),
     ("loan", "Loan of beneficiary"),
     ("increase_factor", "Increase of depreciation factor of fixed assets"),
 )
 
 MECHANISM3_CHOICES = (
-    ('subsidy', 'Subsidy'),
-    ("tax_exemption", "Tax Exemption"), 
+    ('subsidy', 'Subsidy/Tax Exemption'),
     ("loan", "Loan of beneficiary"),
     ("energy_contract", "Energy Contract"),
 )
 
 MECHANISM4_CHOICES = (
-    ('subsidy', 'Subsidy'),
-    ("tax_exemption", "Tax Exemption"), 
+    ('subsidy', 'Subsidy/Tax Exemption'),
     ("loan", "Loan of beneficiary"),
 )
 
@@ -72,64 +68,77 @@ class MechForm4(forms.Form):
     chosen_mechanism = forms.MultipleChoiceField(label="Financial Mechanism", widget=forms.CheckboxSelectMultiple,choices=MECHANISM4_CHOICES)
 
 class LoanForm(forms.Form):
-    loan_rate = forms.FloatField()
-    annual_rate = forms.FloatField()
-    subsidized_interest_rate = forms.FloatField()
-    loan_period = forms.IntegerField(initial=0, required=False)
-    grace_period = forms.IntegerField(initial=0)
+    loan_rate = forms.FloatField(label='Loan Rate %')
+    annual_rate = forms.FloatField(label='Annual Interest Rate %')
+    subsidized_interest_rate = forms.FloatField(label='Annual Subsidzed Interest Rate')
+    loan_period = forms.IntegerField(label='Loan Period (years)', initial=0, required=False)
+    grace_period = forms.IntegerField(label='Grace Period (years)', initial=0)
 
 class FactorForm(forms.Form):
-    depreciation_tax_rate = forms.FloatField()
-    tax_lifetime = forms.IntegerField()
+    depreciation_tax_rate = forms.FloatField(label="Tax Depreciation Rate %")
+    tax_lifetime = forms.IntegerField(label='Tax Lifetime %')
 
 CRITERION_CHOICES = [
     ('profit', 'Profit'),
-    ("irr", "IRR"), 
-    ("spbp", "Simple Payback Period"),
-    ("dpbp", "Discounted Payback Period"),
+    ("npv", "Net Present Value"), 
+    ("b_to_c", "Benefit to Cost Ratio"),
 ]
 
 SATISFY_CRITERION_CHOICES = [
     ("contract_period", "Contract Period Variation"), 
     ("benefit_share", "Benefit Share Percentage"),
-    ("cost_esco", "Cost Percentage of ESCO"),
 ]
 
 class ContractForm(forms.Form):
     chosen_criterion = forms.CharField(label="Choose participation criterion for ESCO", widget=forms.Select(choices=CRITERION_CHOICES))
     criterion_satisfaction = forms.CharField(label="Criterion will be satisfied by:", widget=forms.Select(choices=SATISFY_CRITERION_CHOICES))
-    discount_rate = forms.FloatField()
+    discount_rate = forms.FloatField(label="Discount Rate %")
     
-class CostStatisfy(forms.Form):
-    contract_period = forms.IntegerField()
-    benefit_share_rate = forms.FloatField()
 
 class PeriodSatisfy(forms.Form):
-    cost_esco_rate = forms.FloatField()
-    benefit_share_rate = forms.FloatField()
+    cost_esco_rate = forms.FloatField(label="Cost Rate %")
+    benefit_share_rate = forms.FloatField(label="Benefit Share %")
 
 class BenefitSatisfy(forms.Form):
-    contract_period = forms.IntegerField()
-    cost_esco_rate = forms.FloatField()
+    contract_period = forms.IntegerField(label="Contract Period (yrs)")
+    cost_esco_rate = forms.FloatField(label="Cost Rate %")
 
 class ProfitInput(forms.Form):
-    profit = forms.FloatField()
+    profit = forms.FloatField(label="Profit %")
 
-class IrrInput(forms.Form):
-    irr = forms.FloatField()
+class NPVInput(forms.Form):
+    npv = forms.FloatField(label="Net Present Value")
 
-class SInput(forms.Form):
-    spbp = forms.FloatField()
-
-class DInput(forms.Form):
-    dpbp = forms.FloatField()
+class BCInput(forms.Form):
+    b_to_c = forms.FloatField(label="Benefit to Cost Ratio")
 
 class EscoLoan(forms.Form):
-    loan_rate = forms.FloatField()
-    annual_rate = forms.FloatField()
-    subsidized_interest_rate = forms.FloatField()
-    loan_period = forms.IntegerField(initial=0, required=False)
-    grace_period = forms.IntegerField(initial=0)
+    loan_rate = forms.FloatField(label='Loan Rate %')
+    annual_rate = forms.FloatField(label='Annual Interest Rate %')
+    subsidized_interest_rate = forms.FloatField(label='Annual Subsidzed Interest Rate')
+    loan_period = forms.IntegerField(label='Loan Period (years)', initial=0, required=False)
+    grace_period = forms.IntegerField(label='Grace Period (years)', initial=0)
 
 class SubsidyForm(forms.Form):
-    subsidy_rate = forms.FloatField()
+    subsidy_rate = forms.FloatField(label='Rate of Subsidy or Tax Exemption %')
+  
+
+SENSITIVITY_CHOICES = [
+    ('disc', 'Discount Rate'),
+    ("period", "Analysis Period"), 
+]
+
+INDICES_CHOICES = [
+    ('npv', 'Net Present Value'),
+    ("irr", "IRR"), 
+    ("bc", "Benefit to Cost Ratio"), 
+    ("pbp", "Discounted Payback Period"), 
+
+]
+
+class SensitiveForm(forms.Form):
+    variable = forms.CharField(label="Choose Critical Variable", widget=forms.Select(choices=SENSITIVITY_CHOICES))
+    a = forms.FloatField(label="Min")
+    b = forms.FloatField(label="Best")
+    c = forms.FloatField(label="Max")
+    indices = forms.CharField(label="Choose Index for Analysis", widget=forms.Select(choices=INDICES_CHOICES))
