@@ -1,3 +1,5 @@
-# #ece_thesis
+Multi Perspective Investment Analysis Application 
 
-Τίτλος: Ανάπτυξη πληροφοριακού συστήματος οικονομικής αξιολόγησης πολιτικών προώθησης της ενεργειακής αποδοτικότητας
+in energy efficiency data. 
+
+Thesis, National Technical University of Athens
