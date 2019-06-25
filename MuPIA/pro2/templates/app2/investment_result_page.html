@@ -84,6 +84,7 @@
             <p>NPV: {{ item.npv}}</p>
             <p>IRR: {{ item.irr}}</p>
             <p>Discounted Payback Period: {{ item.dpbp}}</p>
+            <p>Benefit to Share Ratio: {{ item.b_to_c }}</p>
             <br>
             <div class="box">
             <form  action="{% url 'investment_result_page' %}" method="POST">

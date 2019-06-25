@@ -76,7 +76,7 @@ class LoanForm(forms.Form):
 
 class FactorForm(forms.Form):
     depreciation_tax_rate = forms.FloatField(label="Tax Depreciation Rate %")
-    tax_lifetime = forms.IntegerField(label='Tax Lifetime %')
+    tax_lifetime = forms.IntegerField(label='Tax Lifetime (yrs)')
 
 CRITERION_CHOICES = [
     ('profit', 'Profit'),
