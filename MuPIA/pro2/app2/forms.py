@@ -125,7 +125,9 @@ class SubsidyForm(forms.Form):
 
 SENSITIVITY_CHOICES = [
     ('disc', 'Discount Rate'),
-    ("period", "Analysis Period"), 
+    ("period", "Analysis Period"),
+    ("mul", "Multiplier for Energy Prices Rate"), 
+ 
 ]
 
 INDICES_CHOICES = [
@@ -142,3 +144,4 @@ class SensitiveForm(forms.Form):
     b = forms.FloatField(label="Best")
     c = forms.FloatField(label="Max")
     indices = forms.CharField(label="Choose Index for Analysis", widget=forms.Select(choices=INDICES_CHOICES))
+    measure = forms.CharField()

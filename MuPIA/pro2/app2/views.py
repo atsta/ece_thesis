@@ -19,6 +19,8 @@ from pandas.io.json import json_normalize
 import numpy as np
 import matplotlib.pyplot as plt
 
+import csv
+
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
 
@@ -742,6 +744,7 @@ def sensitivity(request):
                         c = form.cleaned_data['c']
                         var = form.cleaned_data['variable']
                         index = form.cleaned_data['indices']
+                        sm = form.cleaned_data['measure']
                         print(a)
 
 
@@ -765,6 +768,8 @@ def sensitivity(request):
                         pieces = []
                         dfs = {}
                         cdfs = {}
+                        total = []
+
                         for item in selected_measures:
                                 if article == 'art3':
                                         m = energy_measure.Measure(item, 3)
@@ -865,7 +870,7 @@ def sensitivity(request):
                                 p = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
                                 
                                 
-                                h = plt.hist(np.random.triangular(0.02, 0.05, 0.1, 1000000), bins=100, density=True)    
+                                h = plt.hist(np.random.triangular(a, b, c, 1000000), bins=100, density=True)    
                                 results = []
                 
                                 for val in h[1]:
@@ -889,8 +894,112 @@ def sensitivity(request):
                                                 if index == 'irr':
                                                         results.append(p.irr)
                                                 if index == 'pbp':
-                                                        results.append(p.dpbp)                  
+                                                        results.append(p.dpbp)  
+                                        if var == 'mul':
+                                                new_rate = {
+                                                        "electricity": val*float(m.energy_price_growth_rate["electricity"]),
+                                                        "diesel_oil": val*float(m.energy_price_growth_rate["diesel_oil"]),
+                                                        "motor_gasoline": val*float(m.energy_price_growth_rate["motor_gasoline"]), 
+                                                        "natural_gas": val*float(m.energy_price_growth_rate["natural_gas"]), 
+                                                        "biomass": val*float(m.energy_price_growth_rate["biomass"])
+                                                }
+
+                                                p = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, new_rate, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
+                                                if index == 'bc':
+                                                        results.append(p.b_to_c)
+                                                if index == 'npv':
+                                                        results.append(p.npv)
+                                                if index == 'irr':
+                                                        results.append(p.irr)
+                                                if index == 'pbp':
+                                                        results.append(p.dpbp) 
                                 print(results)
+                                #total.append(results)
+
+                                if item == sm:
+                                        if var == 'disc':
+                                                p0 = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, a, sub, ln, esco, tax)
+                                                p1 = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, b, sub, ln, esco, tax)
+                                                p2 = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, analysis_period, c, sub, ln, esco, tax)
+
+                                                if index == 'bc':
+                                                        li = [p0.b_to_c, p1.b_to_c, p2.b_to_c]
+                                                if index == 'npv':
+                                                        li = [p0.npv, p1.npv, p2.npv]
+                                                if index == 'irr':
+                                                        li = [p0.irr, p1.irr, p2.irr]
+                                                if index == 'pbp':
+                                                        li = [p0.dpbp, p1.dpbp, p2.dpbp]
+                                        if var =='period':
+                                                p0 = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, a, discount_rate, sub, ln, esco, tax)
+                                                p1 = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, b, discount_rate, sub, ln, esco, tax)
+                                                p2 = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, m.energy_price_growth_rate, selected_costs, selected_benefits, c, discount_rate, sub, ln, esco, tax)
+
+                                                if index == 'bc':
+                                                        li = [p0.b_to_c, p1.b_to_c, p2.b_to_c]
+                                                if index == 'npv':
+                                                        li = [p0.npv, p1.npv, p2.npv]
+                                                if index == 'irr':
+                                                        li = [p0.irr, p1.irr, p2.irr]
+                                                if index == 'pbp':
+                                                        li = [p0.dpbp, p1.dpbp, p2.dpbp]
+                                        if var == 'mul':
+                                                new_rate0 = {
+                                                        "electricity": a*float(m.energy_price_growth_rate["electricity"]),
+                                                        "diesel_oil": a*float(m.energy_price_growth_rate["diesel_oil"]),
+                                                        "motor_gasoline": a*float(m.energy_price_growth_rate["motor_gasoline"]), 
+                                                        "natural_gas": a*float(m.energy_price_growth_rate["natural_gas"]), 
+                                                        "biomass": a*float(m.energy_price_growth_rate["biomass"])
+                                                }
+                                                new_rate1 = {
+                                                        "electricity": b*float(m.energy_price_growth_rate["electricity"]),
+                                                        "diesel_oil": b*float(m.energy_price_growth_rate["diesel_oil"]),
+                                                        "motor_gasoline": b*float(m.energy_price_growth_rate["motor_gasoline"]), 
+                                                        "natural_gas": b*float(m.energy_price_growth_rate["natural_gas"]), 
+                                                        "biomass": b*float(m.energy_price_growth_rate["biomass"])
+                                                }
+                                                new_rate2 = {
+                                                        "electricity": c*float(m.energy_price_growth_rate["electricity"]),
+                                                        "diesel_oil": c*float(m.energy_price_growth_rate["diesel_oil"]),
+                                                        "motor_gasoline": c*float(m.energy_price_growth_rate["motor_gasoline"]), 
+                                                        "natural_gas": c*float(m.energy_price_growth_rate["natural_gas"]), 
+                                                        "biomass": c*float(m.energy_price_growth_rate["biomass"])
+                                                }
+                                                p0 = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, new_rate0, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
+                                                p1 = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, new_rate1, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
+                                                p2 = perspective.Perspective(m.specs, m.energy_conservation, m.energy_price_with_taxes, new_rate2, selected_costs, selected_benefits, analysis_period, discount_rate, sub, ln, esco, tax)
+
+                                                if index == 'bc':
+                                                        li = [p0.b_to_c, p1.b_to_c, p2.b_to_c]
+                                                if index == 'npv':
+                                                        li = [p0.npv, p1.npv, p2.npv]
+                                                if index == 'irr':
+                                                        li = [p0.irr, p1.irr, p2.irr]
+                                                if index == 'pbp':
+                                                        li = [p0.dpbp, p1.dpbp, p2.dpbp]
+
+                                        with open('/home/atsta/Documents/ECE NTUA/Thesis/code/ece_thesis/MuPIA/pro2/app2/sensitivity.csv', "w") as file:
+                                                writer = csv.writer(file)
+                                                if var == "disc":
+                                                        writer.writerow(["discount rate"])
+                                                elif var == 'period':
+                                                        writer.writerow(["analysis period"])
+                                                else: 
+                                                        writer.writerow(["energy rate multiplier"])
+
+                                                if index == 'bc':
+                                                        writer.writerow(["B/C"]) 
+                                                if index == 'npv':
+                                                        writer.writerow(["NPV"]) 
+                                                if index == 'irr':
+                                                        writer.writerow(["IRR"]) 
+                                                if index == 'pbp':
+                                                        writer.writerow(["Payback Period"]) 
+                                                writer.writerow(li)
+                                                writer.writerow(results)  
+                                
+                              
+
                 # #print(h[0])
                 # print(h[1])
                 # print(result_b_to_c)
