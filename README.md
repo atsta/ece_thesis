@@ -1,5 +1,9 @@
-Multi Perspective Investment Analysis Application 
+Multi Perspective Investment Analysis Application. In energy efficiency data. Thesis, National Technical University of Athens.
 
-in energy efficiency data. 
+Modules: core analysis components
 
-Thesis, National Technical University of Athens
+Django application app2: views, models and forms
+
+Django project pro2: urls and general settings
+
+Templates: html files attached to views
