@@ -9,7 +9,7 @@ import psycopg2.extras
 import numpy as np
 import pandas as pd
 
-conn_string = "host='localhost' dbname='energy_db' user='postgres' password='45452119'"
+conn_string = "host='localhost' dbname='energy_db' user='athina' password='45452119'"
 # get a connection with energy db
 conn = psycopg2.connect(conn_string)
 

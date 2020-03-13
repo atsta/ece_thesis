@@ -77,11 +77,12 @@ WSGI_APPLICATION = 'pro2.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': "energy_db",
-        'USER' : "postgres",
+        'USER' : "athina",
         'PASSWORD': "45452119",
         'HOST' : 'localhost',
+        'PORT': '',
     }
 }
 
