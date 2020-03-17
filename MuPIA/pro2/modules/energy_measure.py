@@ -119,7 +119,7 @@ class Measure():
     def get_prices(self):
         try: 
             cursor1 = conn.cursor('cursor_backup', cursor_factory=psycopg2.extras.DictCursor)
-            cursor1.execute('SELECT * FROM energy_cost LIMIT 800')
+            cursor1.execute('SELECT * FROM app2_energy_cost LIMIT 800')
             for row in cursor1:
                 if self.specs["category"] == 'household':
                     if row[0].strip() == 'Biomass hh':

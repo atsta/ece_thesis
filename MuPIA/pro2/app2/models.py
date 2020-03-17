@@ -22,6 +22,14 @@ TYPE_CHOICES = [
     ("technical", "Technical"),
     ("behavioral", "Behavioral"),
 ]
+
+class Energy_Cost(models.Model):
+    energy_type = models.CharField(max_length=150, unique=True, primary_key=True)
+    price_with_taxes = models.FloatField(default=0)
+    price_without_taxes = models.FloatField(default=0)
+    growth_rate = models.FloatField(default=0)
+
+
 class Measure(models.Model):
     name = models.CharField(max_length=150, unique=True, primary_key=True)
     cost = models.FloatField(default=0)

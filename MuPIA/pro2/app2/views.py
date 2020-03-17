@@ -707,10 +707,10 @@ def investment_analysis_results(request):
 
         return render(request, 'app2/investment_result_page.html', {'analysis':an})
 
-def exportCSV (df):
-    
-    export_file_path = filedialog.asksaveasfilename(defaultextension='.csv')
-    df.to_csv (export_file_path, index = None, header=True)
+#def exportCSV (df):
+ #   
+  #  export_file_path = filedialog.asksaveasfilename(defaultextension='.csv')
+   # df.to_csv (export_file_path, index = None, header=True)
 
 def investment_result_page(request):
         selected_measures = request.session['list']
