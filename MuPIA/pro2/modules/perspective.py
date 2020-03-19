@@ -176,7 +176,7 @@ class Perspective():
 
 
     def calculate_equipment_cost(self):
-        if self.esco.cost_share_rate > 0 : 
+        if self.esco.cost_share_rate >0 and loan.loan_rate> 0 : 
             loan_fund = (1-self.esco.cost_share_rate)*self.loan.loan_fund/self.loan.loan_rate
             new_loan = Loan(loan_fund, self.loan.loan_rate, self.loan.annual_interest, self.loan.subsidized_interest, self.loan.loan_period, self.loan.grace_period)
         for year in range(self.analysis_period):

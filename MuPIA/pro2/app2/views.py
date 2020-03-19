@@ -12,8 +12,8 @@ from modules import energy_measure, financial_mechanism, perspective, social_inv
 import string
 import random
 import pandas as pd
-import tkinter as tk
-from tkinter import filedialog
+#import tkinter as tk
+#from tkinter import filedialog
 import json
 from pandas.io.json import json_normalize
 import numpy as np
@@ -723,14 +723,20 @@ def investment_result_page(request):
                                 data = dfs[item]
                                 df =  pd.read_json(data, orient='table')
                                 print(df)
-                                saveAsButton_CSV = tk.Button(text='Export CSV', command=exportCSV(df), bg='green', fg='white', font=('helvetica', 12, 'bold'))
-                                return HttpResponse(" ")
+                                response = HttpResponse(content_type='text/csv')
+                                response['Content-Disposition'] = 'attachment; filename=Infilename.csv'
+                                df.to_csv(path_or_buf=response,sep=',',index=False,decimal=".")
+                                #saveAsButton_CSV = tk.Button(text='Export CSV', command=exportCSV(df), bg='green', fg='white', font=('helvetica', 12, 'bold'))
+                                return response
                         else: 
                                 data = cdfs[item]
                                 df =  pd.read_json(data, orient='table')
                                 print(df)
-                                saveAsButton_CSV = tk.Button(text='Export CSV', command=exportCSV(df), bg='green', fg='white', font=('helvetica', 12, 'bold'))
-                                return HttpResponse(" ")
+                                response = HttpResponse(content_type='text/csv')
+                                response['Content-Disposition'] = 'attachment; filename=Outfilename.csv'
+                                df.to_csv(path_or_buf=response,sep=',',index=False,decimal=".")
+                              #  saveAsButton_CSV = tk.Button(text='Export CSV', command=exportCSV(df), bg='green', fg='white', font=('helvetica', 12, 'bold'))
+                                return response
         
         return render(request, 'app2/investment_result_page.html')
 
@@ -978,25 +984,25 @@ def sensitivity(request):
                                                 if index == 'pbp':
                                                         li = [p0.dpbp, p1.dpbp, p2.dpbp]
 
-                                        with open('/home/atsta/Documents/ECE NTUA/Thesis/code/ece_thesis/MuPIA/pro2/app2/sensitivity.csv', "w") as file:
-                                                writer = csv.writer(file)
-                                                if var == "disc":
-                                                        writer.writerow(["discount rate"])
-                                                elif var == 'period':
-                                                        writer.writerow(["analysis period"])
-                                                else: 
-                                                        writer.writerow(["energy rate multiplier"])
-
-                                                if index == 'bc':
-                                                        writer.writerow(["B/C"]) 
-                                                if index == 'npv':
-                                                        writer.writerow(["NPV"]) 
-                                                if index == 'irr':
-                                                        writer.writerow(["IRR"]) 
-                                                if index == 'pbp':
-                                                        writer.writerow(["Payback Period"]) 
-                                                writer.writerow(li)
-                                                writer.writerow(results)  
+                                        #with open('/home/atsta/Documents/ECE NTUA/Thesis/code/ece_thesis/MuPIA/pro2/app2/sensitivity.csv', "w") as file:
+                                        #        writer = csv.writer(file)
+                                        #        if var == "disc":
+                                        #                writer.writerow(["discount rate"])
+                                        #        elif var == 'period':
+                                        #                writer.writerow(["analysis period"])
+                                        #        else: 
+                                        #                writer.writerow(["energy rate multiplier"])
+#
+                                        #        if index == 'bc':
+                                        #                writer.writerow(["B/C"]) 
+                                        #        if index == 'npv':
+                                        #                writer.writerow(["NPV"]) 
+                                       #         if index == 'irr':
+                                        #                writer.writerow(["IRR"]) 
+                                        #        if index == 'pbp':
+                                        #                writer.writerow(["Payback Period"]) 
+                                        #        writer.writerow(li)
+                                        #        writer.writerow(results)  
                                 
                               
 
