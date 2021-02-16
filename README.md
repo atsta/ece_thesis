@@ -2,7 +2,7 @@
 
 Diploma Thesis, National Technical University of Athens (NTUA).
 
-# Functionality: 
+Functionality: 
 * Cost - Benefit Analysis from a selected stakeholder's perspective (selection made by the user)
 * Financial Cost - Benefit Analysis from a selected stakeholder's perspective
 * Simple Cost - Benefit and Financial Cost - Benefit Analysis
