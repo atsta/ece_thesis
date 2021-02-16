@@ -1,9 +1,14 @@
-Multi Perspective Investment Analysis Application. In energy efficiency data. Thesis, National Technical University of Athens.
+# Multi Perspective Investment Analysis Application
 
-Modules: core analysis components
+Diploma Thesis, National Technical University of Athens (NTUA).
 
-Django application app2: views, models and forms
+# Functionality: 
+* Cost - Benefit Analysis from a selected stakeholder's perspective (selection made by the user)
+* Financial Cost - Benefit Analysis from a selected stakeholder's perspective
+* Simple Cost - Benefit and Financial Cost - Benefit Analysis
+* Create investment porfolio by combining multiple investment measures
+* New investmenet measure insertion
+* Search for a measure based on filters (Category, Type, Taxes)
 
-Django project pro2: urls and general settings
-
-Templates: html files attached to views
+# Implementation: 
+PostgreSQL, Django
